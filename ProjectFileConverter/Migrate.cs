@@ -1,5 +1,6 @@
 ﻿namespace ProjectFileConverter
 {
+    using System.Linq;
     using System.Text;
     using System.Text.RegularExpressions;
     using System.Xml.Linq;
@@ -83,6 +84,7 @@
         {
             public static bool TryMigrate(XElement old, StringBuilder error, out XElement migrated)
             {
+                // http://www.natemcmaster.com/blog/2017/03/09/vs2015-to-vs2017-upgrade/#propertygroup
                 var errorLength = error.Length;
                 migrated = new XElement(old.Name);
                 CopyAttributes(old, migrated);
@@ -183,14 +185,36 @@
         {
             public static bool TryMigrate(XElement old, StringBuilder error, out XElement migrated)
             {
+                // http://www.natemcmaster.com/blog/2017/03/09/vs2015-to-vs2017-upgrade/#that-massive-list-of-files
                 var errorLength = error.Length;
                 migrated = new XElement(old.Name);
                 CopyAttributes(old, migrated);
 
                 foreach (var element in old.Elements())
                 {
-                    if (element.Name == "None")
+                    var localName = element.Name.LocalName;
+                    if (localName == "None")
                     {
+                        continue;
+                    }
+
+                    if (localName == "Reference ")
+                    {
+                        if (element.Value == null &&
+                            !element.HasElements &&
+                            element.HasAttributes &&
+                            element.Attributes().Count() == 1 &&
+                            element.Attribute(XName.Get("Include")) is XAttribute attribute)
+                        {
+                            if (attribute.Value == "System" ||
+                                attribute.Value == "System.Core")
+                            {
+                                continue;
+                            }
+                        }
+
+                        migrated.SetElementValue(element.Name, element.Value);
+                        CopyAttributes(element, migrated.Element(element.Name));
                         continue;
                     }
 

@@ -43,6 +43,22 @@
                 Assert.AreEqual("", errorBuilder.ToString());
                 Assert.AreEqual(null, migrated);
             }
+
+            [Test]
+            public void FrameworkReferences()
+            {
+                var element = XElement.Parse(
+                    @"
+<ItemGroup>
+  <Reference Include=""System"" />
+  <Reference Include=""System.Core"" />
+</ItemGroup>");
+
+                var errorBuilder = new StringBuilder();
+                Assert.AreEqual(true, Migrate.ItemGroup.TryMigrate(element, errorBuilder, out var migrated));
+                Assert.AreEqual("", errorBuilder.ToString());
+                Assert.AreEqual(null, migrated);
+            }
         }
     }
 }
