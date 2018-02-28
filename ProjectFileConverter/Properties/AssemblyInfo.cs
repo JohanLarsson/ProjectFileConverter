@@ -1,6 +1,4 @@
 ﻿using System.Reflection;
-using System.Resources;
-using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Windows;
 
@@ -12,7 +10,7 @@ using System.Windows;
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("Sandvik IT")]
 [assembly: AssemblyProduct("ProjectFileConverter")]
-[assembly: AssemblyCopyright("Copyright © Sandvik IT 2018")]
+[assembly: AssemblyCopyright("Copyright © Johan Larsson 2018")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 

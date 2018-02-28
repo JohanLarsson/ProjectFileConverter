@@ -25,6 +25,16 @@
                     continue;
                 }
 
+                if (ItemGroup.TryMigrate(element, errorBuilder, out migratedElement))
+                {
+                    if (migratedElement != null)
+                    {
+                        root.Add(migratedElement);
+                    }
+
+                    continue;
+                }
+
                 if (element.Name.LocalName == "Choose")
                 {
                     continue;
@@ -85,6 +95,12 @@
             public static bool TryMigrate(XElement old, StringBuilder error, out XElement migrated)
             {
                 // http://www.natemcmaster.com/blog/2017/03/09/vs2015-to-vs2017-upgrade/#propertygroup
+                if (old.Name.LocalName != "PropertyGroup")
+                {
+                    migrated = null;
+                    return false;
+                }
+
                 var errorLength = error.Length;
                 migrated = new XElement(old.Name);
                 CopyAttributes(old, migrated);
@@ -186,6 +202,12 @@
             public static bool TryMigrate(XElement old, StringBuilder error, out XElement migrated)
             {
                 // http://www.natemcmaster.com/blog/2017/03/09/vs2015-to-vs2017-upgrade/#that-massive-list-of-files
+                if (old.Name.LocalName != "ItemGroup")
+                {
+                    migrated = null;
+                    return false;
+                }
+
                 var errorLength = error.Length;
                 migrated = new XElement(old.Name);
                 CopyAttributes(old, migrated);
@@ -198,16 +220,23 @@
                         continue;
                     }
 
-                    if (localName == "Reference ")
+                    if (localName == "Reference")
                     {
-                        if (element.Value == null &&
+                        if (element.Value == string.Empty &&
                             !element.HasElements &&
                             element.HasAttributes &&
                             element.Attributes().Count() == 1 &&
                             element.Attribute(XName.Get("Include")) is XAttribute attribute)
                         {
                             if (attribute.Value == "System" ||
-                                attribute.Value == "System.Core")
+                                attribute.Value == "System.Core"||
+                                attribute.Value == "System.Data"||
+                                attribute.Value == "System.Drawing"||
+                                attribute.Value == "System.IO.Compression.FileSystem"||
+                                attribute.Value == "System.Numerics"||
+                                attribute.Value == "System.Runtime.Serialization"||
+                                attribute.Value == "System.Xml"||
+                                attribute.Value == "System.Xml.Linq")
                             {
                                 continue;
                             }

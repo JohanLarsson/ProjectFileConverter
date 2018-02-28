@@ -1,14 +1,16 @@
-﻿<Window
-    x:Class="ProjectFileConverter.MainWindow"
-    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-    xmlns:local="clr-namespace:ProjectFileConverter"
-    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    Title="MainWindow"
-    Width="525"
-    Height="350"
-    mc:Ignorable="d">
+﻿<Window x:Class="ProjectFileConverter.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:local="clr-namespace:ProjectFileConverter"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        Title="MainWindow"
+        Width="525"
+        Height="350"
+        mc:Ignorable="d">
+    <Window.DataContext>
+        <local:ViewModel />
+    </Window.DataContext>
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
@@ -16,12 +18,12 @@
         </Grid.RowDefinitions>
         <Menu Grid.Row="0">
             <Menu.CommandBindings>
-                <CommandBinding Command="Open" Executed="OnOpenExecuted" />
-                <CommandBinding Command="Save" Executed="OnSaveExecuted" />
+                    <CommandBinding Command="Open" Executed="OnOpen" />
+                    <CommandBinding Command="Save" CanExecute="OnCanSave" Executed="OnSave" />
             </Menu.CommandBindings>
             <MenuItem Header="File">
-                <MenuItem Header="_Open" />
-                <MenuItem Header="_Save" />
+                <MenuItem Header="_Open" Command="Open" />
+                <MenuItem Header="_Save" Command="Save"/>
             </MenuItem>
         </Menu>
         <Grid Grid.Row="1">
@@ -29,6 +31,15 @@
                 <ColumnDefinition />
                 <ColumnDefinition />
             </Grid.ColumnDefinitions>
+            <TextBox Grid.Column="0" Text="{Binding Original}" />
+            <Grid Grid.Column="1">
+                <Grid.RowDefinitions>
+                    <RowDefinition />
+                    <RowDefinition />
+                </Grid.RowDefinitions>
+                <TextBox Grid.Row="0" Text="{Binding Migrated}" />
+                <TextBox Grid.Row="1" Text="{Binding Error}" />
+            </Grid>
         </Grid>
     </Grid>
 

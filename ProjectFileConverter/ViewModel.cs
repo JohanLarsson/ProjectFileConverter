@@ -2,22 +2,23 @@
 {
     public class ViewModel : System.ComponentModel.INotifyPropertyChanged
     {
-        private string old;
+        private string original;
         private string migrated;
+        private string error;
 
         public event System.ComponentModel.PropertyChangedEventHandler PropertyChanged;
 
-        public string Old
+        public string Original
         {
-            get => old;
+            get => this.original;
             set
             {
-                if (value == old)
+                if (value == this.original)
                 {
                     return;
                 }
 
-                old = value;
+                this.original = value;
                 OnPropertyChanged();
             }
         }
@@ -34,6 +35,21 @@
 
                 migrated = value;
                 OnPropertyChanged();
+            }
+        }
+
+        public string Error
+        {
+            get => this.error;
+            set
+            {
+                if (value == this.error)
+                {
+                    return;
+                }
+
+                this.error = value;
+                this.OnPropertyChanged();
             }
         }
 
