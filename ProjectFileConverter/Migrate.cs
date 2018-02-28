@@ -9,11 +9,11 @@
     {
         public static bool TryMigrateProjectFile(string xml, out string migrated, out string error)
         {
-            var old = XDocument.Parse(xml);
+            var original = XDocument.Parse(xml.Replace("xmlns=\"http://schemas.microsoft.com/developer/msbuild/2003\"", string.Empty));
             var root = new XElement(XName.Get("Project"));
             root.SetAttributeValue(XName.Get("Sdk"), "Microsoft.NET.Sdk");
             var errorBuilder = new StringBuilder();
-            foreach (var element in old.Root.Elements())
+            foreach (var element in original.Root.Elements())
             {
                 if (PropertyGroup.TryMigrate(element, errorBuilder, out var migratedElement))
                 {
@@ -229,13 +229,13 @@
                             element.Attribute(XName.Get("Include")) is XAttribute attribute)
                         {
                             if (attribute.Value == "System" ||
-                                attribute.Value == "System.Core"||
-                                attribute.Value == "System.Data"||
-                                attribute.Value == "System.Drawing"||
-                                attribute.Value == "System.IO.Compression.FileSystem"||
-                                attribute.Value == "System.Numerics"||
-                                attribute.Value == "System.Runtime.Serialization"||
-                                attribute.Value == "System.Xml"||
+                                attribute.Value == "System.Core" ||
+                                attribute.Value == "System.Data" ||
+                                attribute.Value == "System.Drawing" ||
+                                attribute.Value == "System.IO.Compression.FileSystem" ||
+                                attribute.Value == "System.Numerics" ||
+                                attribute.Value == "System.Runtime.Serialization" ||
+                                attribute.Value == "System.Xml" ||
                                 attribute.Value == "System.Xml.Linq")
                             {
                                 continue;
