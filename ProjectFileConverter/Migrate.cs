@@ -1,24 +1,82 @@
 ﻿namespace ProjectFileConverter
 {
+    using System.Text;
     using System.Xml.Linq;
 
     public static class Migrate
     {
-        public static bool TryMigrateProjectFile(string xml, out string migrated)
+        public static bool TryMigrateProjectFile(string xml, out string migrated, out string error)
         {
             var old = XDocument.Parse(xml);
+            var root = new XElement(XName.Get("Project"));
+            root.SetAttributeValue(XName.Get("Sdk"), "Microsoft.NET.Sdk");
+            var errorBuilder = new StringBuilder();
             foreach (var element in old.Root.Elements())
             {
+                if (PropertyGroup.TryMigrate(element, errorBuilder, out var migratedElement))
+                {
+                    if (migratedElement != null)
+                    {
+                        root.Add(migratedElement);
+                    }
 
+                    continue;
+                }
+
+                if (element.HasAttributes &&
+                    !element.HasElements)
+                {
+                    var elementXml = element.ToString();
+                    if (elementXml == "<Import Project=\"$(MSBuildExtensionsPath)\\$(MSBuildToolsVersion)\\Microsoft.Common.props\" Condition=\"Exists(\'$(MSBuildExtensionsPath)\\$(MSBuildToolsVersion)\\Microsoft.Common.props\')\" />" ||
+                        elementXml == "<Import Project=\"$(MSBuildToolsPath)\\Microsoft.CSharp.targets\" />")
+                    {
+                        continue;
+                    }
+
+                    if (elementXml == "<Import Project=\"..\\.paket\\paket.targets\" />")
+                    {
+                        root.Add(element);
+                        continue;
+                    }
+                }
+
+                errorBuilder.AppendLine($"Unknown element in root: {element.Name}");
             }
-            migrated = null;
+
+            migrated = new XDocument(root).ToString();
+            error = errorBuilder.ToString();
+            return errorBuilder.Length == 0;
+        }
+
+        private static void CopyAttributes(XElement source, XElement target)
+        {
+            foreach (var attribute in source.Attributes())
+            {
+                target.SetAttributeValue(attribute.Name, attribute.Value);
+            }
+        }
+
+        private static bool TryCopy(XElement element, XElement migrated, string name, string defaultValue)
+        {
+            if (element.Name.LocalName == name)
+            {
+                if (element.Value != defaultValue)
+                {
+                    migrated.SetElementValue(element.Name, element.Value);
+                    CopyAttributes(element, migrated.Element(element.Name));
+                }
+
+                return true;
+            }
+
             return false;
         }
 
         public static class PropertyGroup
         {
-            public static bool TryMigrate(XElement old, out XElement migrated)
+            public static bool TryMigrate(XElement old, StringBuilder error, out XElement migrated)
             {
+                var errorLength = error.Length;
                 migrated = new XElement(old.Name);
                 CopyAttributes(old, migrated);
 
@@ -27,24 +85,12 @@
                     var localName = element.Name.LocalName;
                     if (localName == "TargetFrameworkVersion")
                     {
-                        switch (element.Value)
+                        if (TryGetVersion(element.Value, out var version))
                         {
-                            case "v4.5":
-                                migrated.SetElementValue(XName.Get("TargetFramework"), "net45");
-                                break;
-                            case "v4.5.2":
-                                migrated.SetElementValue(XName.Get("TargetFramework"), "net452");
-                                break;
-                            case "v4.6":
-                                migrated.SetElementValue(XName.Get("TargetFramework"), "net46");
-                                break;
-                            case "v4.6.1":
-                                migrated.SetElementValue(XName.Get("TargetFramework"), "net461");
-                                break;
-                            default:
-                                return false;
+                            migrated.SetElementValue(XName.Get("TargetFramework"), version);
                         }
 
+                        error.AppendLine($"Unknown version: {element}");
                         continue;
                     }
 
@@ -63,7 +109,7 @@
                         localName == "DebugType" ||
                         localName == "Optimize" ||
                         localName == "OutputPath" ||
-                        localName =="DefineConstants")
+                        localName == "DefineConstants")
                     {
                         continue;
                     }
@@ -83,13 +129,12 @@
                         TryCopy(element, migrated, "SignAssembly", null) ||
                         TryCopy(element, migrated, "AssemblyOriginatorKeyFile", null) ||
                         TryCopy(element, migrated, "CodeAnalysisRuleSet", null) ||
-                        TryCopy(element, migrated, "DocumentationFile", null) )
+                        TryCopy(element, migrated, "DocumentationFile", null))
                     {
                         continue;
                     }
 
-
-                    return false;
+                    error.AppendLine($"Unknown element in PropertyGroup: {element}");
                 }
 
                 if (!migrated.HasElements)
@@ -97,31 +142,29 @@
                     migrated = null;
                 }
 
-                return true;
+                return errorLength == error.Length;
             }
 
-            private static bool TryCopy(XElement element, XElement migrated, string name, string defaultValue)
+            private static bool TryGetVersion(string version, out string mapped)
             {
-                if (element.Name.LocalName == name)
+                switch (version)
                 {
-                    if (element.Value != defaultValue)
-                    {
-                        migrated.SetElementValue(element.Name, element.Value);
-                        CopyAttributes(element, migrated.Element(element.Name));
-                    }
-
-                    return true;
+                    case "v4.5":
+                        mapped = "net45";
+                        return true;
+                    case "v4.5.2":
+                        mapped = "net452";
+                        return true;
+                    case "v4.6":
+                        mapped = "net46";
+                        return true;
+                    case "v4.6.1":
+                        mapped = "net461";
+                        return true;
+                    default:
+                        mapped = null;
+                        return false;
                 }
-
-                return false;
-            }
-        }
-
-        private static void CopyAttributes(XElement source, XElement target)
-        {
-            foreach (var attribute in source.Attributes())
-            {
-                target.SetAttributeValue(attribute.Name, attribute.Value);
             }
         }
     }

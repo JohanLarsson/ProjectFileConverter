@@ -24,7 +24,7 @@
   <FileAlignment>512</FileAlignment>
 </PropertyGroup>");
 
-                Assert.AreEqual(true, Migrate.PropertyGroup.TryMigrate(element, out var migrated));
+                Assert.AreEqual(true, Migrate.PropertyGroup.TryMigrate(element, null, out var migrated));
                 var expected = @"
 <PropertyGroup>
   <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
@@ -50,7 +50,7 @@
   <DocumentationFile>bin\Debug\Gu.Inject.xml</DocumentationFile>
 </PropertyGroup>");
 
-                Assert.AreEqual(true, Migrate.PropertyGroup.TryMigrate(element, out var migrated));
+                Assert.AreEqual(true, Migrate.PropertyGroup.TryMigrate(element, null, out var migrated));
                 var expected = @"
 <PropertyGroup Condition="" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' "">
   <CodeAnalysisRuleSet>Gu.Inject.ruleset</CodeAnalysisRuleSet>
@@ -75,7 +75,7 @@
   <DocumentationFile>bin\Release\Gu.Inject.xml</DocumentationFile>
 </PropertyGroup>");
 
-                Assert.AreEqual(true, Migrate.PropertyGroup.TryMigrate(element, out var migrated));
+                Assert.AreEqual(true, Migrate.PropertyGroup.TryMigrate(element, null, out var migrated));
                 var expected = @"
 <PropertyGroup Condition="" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' "">
   <CodeAnalysisRuleSet>Gu.Inject.ruleset</CodeAnalysisRuleSet>

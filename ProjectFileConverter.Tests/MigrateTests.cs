@@ -113,8 +113,9 @@
   <Import Project=""..\.paket\Paket.Restore.targets"" />
 </Project>";
 
-            Assert.AreEqual(true, Migrate.TryMigrateProjectFile(old, out var migrated));
+            Assert.AreEqual(true, Migrate.TryMigrateProjectFile(old, out var migrated, out var error));
             Assert.AreEqual(expected, migrated);
+            Assert.AreEqual(null, error);
         }
     }
 }
