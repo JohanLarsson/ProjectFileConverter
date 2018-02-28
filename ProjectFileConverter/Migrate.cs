@@ -1,6 +1,7 @@
 ﻿namespace ProjectFileConverter
 {
     using System.Text;
+    using System.Text.RegularExpressions;
     using System.Xml.Linq;
 
     public static class Migrate
@@ -23,12 +24,18 @@
                     continue;
                 }
 
+                if (element.Name.LocalName == "Choose")
+                {
+                    continue;
+                }
+
                 if (element.HasAttributes &&
                     !element.HasElements)
                 {
                     var elementXml = element.ToString();
                     if (elementXml == "<Import Project=\"$(MSBuildExtensionsPath)\\$(MSBuildToolsVersion)\\Microsoft.Common.props\" Condition=\"Exists(\'$(MSBuildExtensionsPath)\\$(MSBuildToolsVersion)\\Microsoft.Common.props\')\" />" ||
-                        elementXml == "<Import Project=\"$(MSBuildToolsPath)\\Microsoft.CSharp.targets\" />")
+                        elementXml == "<Import Project=\"$(MSBuildToolsPath)\\Microsoft.CSharp.targets\" />" ||
+                        elementXml == "<Import Project=\"$(VSToolsPath)\\TeamTest\\Microsoft.TestTools.targets\" Condition=\"Exists(\'$(VSToolsPath)\\TeamTest\\Microsoft.TestTools.targets\')\" />")
                     {
                         continue;
                     }
@@ -89,8 +96,11 @@
                         {
                             migrated.SetElementValue(XName.Get("TargetFramework"), version);
                         }
+                        else
+                        {
+                            error.AppendLine($"Unknown version: {element}");
+                        }
 
-                        error.AppendLine($"Unknown version: {element}");
                         continue;
                     }
 
@@ -107,9 +117,9 @@
                         localName == "Platform" ||
                         localName == "DebugSymbols" ||
                         localName == "DebugType" ||
-                        localName == "Optimize" ||
                         localName == "OutputPath" ||
-                        localName == "DefineConstants")
+                        localName == "DefineConstants" ||
+                        localName == "ProjectTypeGuids")
                     {
                         continue;
                     }
@@ -126,6 +136,7 @@
                         TryCopy(element, migrated, "ErrorReport", "prompt") ||
                         TryCopy(element, migrated, "FileAlignment", "512") ||
                         TryCopy(element, migrated, "OutputType", "Library") ||
+                        TryCopy(element, migrated, "Optimize", "false") ||
                         TryCopy(element, migrated, "SignAssembly", null) ||
                         TryCopy(element, migrated, "AssemblyOriginatorKeyFile", null) ||
                         TryCopy(element, migrated, "CodeAnalysisRuleSet", null) ||
@@ -165,6 +176,44 @@
                         mapped = null;
                         return false;
                 }
+            }
+        }
+
+        public static class ItemGroup
+        {
+            public static bool TryMigrate(XElement old, StringBuilder error, out XElement migrated)
+            {
+                var errorLength = error.Length;
+                migrated = new XElement(old.Name);
+                CopyAttributes(old, migrated);
+
+                foreach (var element in old.Elements())
+                {
+                    if (element.Name == "None")
+                    {
+                        continue;
+                    }
+
+                    var elementXml = element.ToString();
+                    if (Regex.IsMatch(elementXml, @"<Compile Include=""([^\\]+\\)*[^\\]+\.cs"" />"))
+                    {
+                        continue;
+                    }
+
+                    if (Regex.IsMatch(elementXml, @"<EmbeddedResource Include=""([^\\]+\\)*[^\\]+\.resx"" />"))
+                    {
+                        continue;
+                    }
+
+                    error.AppendLine($"Unknown element in ItemGroup: {element}");
+                }
+
+                if (!migrated.HasElements)
+                {
+                    migrated = null;
+                }
+
+                return errorLength == error.Length;
             }
         }
     }

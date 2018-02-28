@@ -1,5 +1,6 @@
 ﻿namespace ProjectFileConverter.Tests
 {
+    using System.Text;
     using System.Xml.Linq;
     using NUnit.Framework;
 
@@ -24,7 +25,9 @@
   <FileAlignment>512</FileAlignment>
 </PropertyGroup>");
 
-                Assert.AreEqual(true, Migrate.PropertyGroup.TryMigrate(element, null, out var migrated));
+                var errorBuilder = new StringBuilder();
+                Assert.AreEqual(true, Migrate.PropertyGroup.TryMigrate(element, errorBuilder, out var migrated));
+                Assert.AreEqual("", errorBuilder.ToString());
                 var expected = @"
 <PropertyGroup>
   <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
@@ -50,7 +53,10 @@
   <DocumentationFile>bin\Debug\Gu.Inject.xml</DocumentationFile>
 </PropertyGroup>");
 
-                Assert.AreEqual(true, Migrate.PropertyGroup.TryMigrate(element, null, out var migrated));
+                var errorBuilder = new StringBuilder();
+                Assert.AreEqual(true, Migrate.PropertyGroup.TryMigrate(element, errorBuilder, out var migrated));
+                Assert.AreEqual("", errorBuilder.ToString());
+
                 var expected = @"
 <PropertyGroup Condition="" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' "">
   <CodeAnalysisRuleSet>Gu.Inject.ruleset</CodeAnalysisRuleSet>
@@ -75,9 +81,13 @@
   <DocumentationFile>bin\Release\Gu.Inject.xml</DocumentationFile>
 </PropertyGroup>");
 
-                Assert.AreEqual(true, Migrate.PropertyGroup.TryMigrate(element, null, out var migrated));
+                var errorBuilder = new StringBuilder();
+                Assert.AreEqual(true, Migrate.PropertyGroup.TryMigrate(element, errorBuilder, out var migrated));
+                Assert.AreEqual("", errorBuilder.ToString());
+
                 var expected = @"
 <PropertyGroup Condition="" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' "">
+  <Optimize>true</Optimize>
   <CodeAnalysisRuleSet>Gu.Inject.ruleset</CodeAnalysisRuleSet>
   <DocumentationFile>bin\Release\Gu.Inject.xml</DocumentationFile>
 </PropertyGroup>";
