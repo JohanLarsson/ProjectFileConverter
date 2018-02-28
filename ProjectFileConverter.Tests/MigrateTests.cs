@@ -96,7 +96,6 @@
 </Project>";
 
             var expected = @"
-<?xml version=""1.0"" encoding=""utf-8""?>
 <Project Sdk=""Microsoft.NET.Sdk"">
   <PropertyGroup>
     <TargetFramework>net452</TargetFramework>

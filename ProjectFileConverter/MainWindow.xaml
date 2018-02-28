@@ -18,12 +18,14 @@
         </Grid.RowDefinitions>
         <Menu Grid.Row="0">
             <Menu.CommandBindings>
-                    <CommandBinding Command="Open" Executed="OnOpen" />
-                    <CommandBinding Command="Save" CanExecute="OnCanSave" Executed="OnSave" />
+                <CommandBinding Command="Open" Executed="OnOpen" />
+                <CommandBinding CanExecute="OnCanSave"
+                                Command="Save"
+                                Executed="OnSave" />
             </Menu.CommandBindings>
             <MenuItem Header="File">
-                <MenuItem Header="_Open" Command="Open" />
-                <MenuItem Header="_Save" Command="Save"/>
+                <MenuItem Command="Open" Header="_Open" />
+                <MenuItem Command="Save" Header="_Save" />
             </MenuItem>
         </Menu>
         <Grid Grid.Row="1">
@@ -31,16 +33,27 @@
                 <ColumnDefinition />
                 <ColumnDefinition />
             </Grid.ColumnDefinitions>
-            <TextBox Grid.Column="0" Text="{Binding Original}" />
+            <GroupBox Grid.Column="0" Header="Original">
+                <TextBox IsReadOnly="True"
+                         IsReadOnlyCaretVisible="True"
+                         Text="{Binding Original}" />
+            </GroupBox>
+
             <Grid Grid.Column="1">
                 <Grid.RowDefinitions>
                     <RowDefinition />
                     <RowDefinition />
                 </Grid.RowDefinitions>
-                <TextBox Grid.Row="0" Text="{Binding Migrated}" />
-                <TextBox Grid.Row="1" Text="{Binding Error}" />
+                <GroupBox Grid.Row="0" Header="Migrated">
+                    <TextBox AcceptsReturn="True" Text="{Binding Migrated}" />
+                </GroupBox>
+
+                <GroupBox Grid.Row="1" Header="Errors">
+                    <TextBox IsReadOnly="True"
+                             IsReadOnlyCaretVisible="True"
+                             Text="{Binding Error}" />
+                </GroupBox>
             </Grid>
         </Grid>
     </Grid>
-
 </Window>

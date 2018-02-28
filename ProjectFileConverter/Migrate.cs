@@ -74,14 +74,13 @@
             }
         }
 
-        private static bool TryCopy(XElement element, XElement migrated, string name, string defaultValue)
+        private static bool TryAdd(XElement element, XElement migrated, string name, string defaultValue)
         {
             if (element.Name.LocalName == name)
             {
                 if (element.Value != defaultValue)
                 {
-                    migrated.SetElementValue(element.Name, element.Value);
-                    CopyAttributes(element, migrated.Element(element.Name));
+                    migrated.Add(element);
                 }
 
                 return true;
@@ -144,21 +143,22 @@
 
                     if (localName == "NoWarn")
                     {
-                        migrated.SetElementValue(element.Name, element.Value);
-                        CopyAttributes(element, migrated.Element(element.Name));
+                        migrated.Add(element);
                         continue;
                     }
 
-                    if (TryCopy(element, migrated, "FileAlignment", "512") ||
-                        TryCopy(element, migrated, "WarningLevel", "4") ||
-                        TryCopy(element, migrated, "ErrorReport", "prompt") ||
-                        TryCopy(element, migrated, "FileAlignment", "512") ||
-                        TryCopy(element, migrated, "OutputType", "Library") ||
-                        TryCopy(element, migrated, "Optimize", "false") ||
-                        TryCopy(element, migrated, "SignAssembly", null) ||
-                        TryCopy(element, migrated, "AssemblyOriginatorKeyFile", null) ||
-                        TryCopy(element, migrated, "CodeAnalysisRuleSet", null) ||
-                        TryCopy(element, migrated, "DocumentationFile", null))
+                    if (TryAdd(element, migrated, "FileAlignment", "512") ||
+                        TryAdd(element, migrated, "WarningLevel", "4") ||
+                        TryAdd(element, migrated, "ErrorReport", "prompt") ||
+                        TryAdd(element, migrated, "FileAlignment", "512") ||
+                        TryAdd(element, migrated, "OutputType", "Library") ||
+                        TryAdd(element, migrated, "Optimize", "false") ||
+                        TryAdd(element, migrated, "AutoGenerateBindingRedirects", "false") ||
+                        TryAdd(element, migrated, "TargetFrameworkProfile", string.Empty) ||
+                        TryAdd(element, migrated, "SignAssembly", null) ||
+                        TryAdd(element, migrated, "AssemblyOriginatorKeyFile", null) ||
+                        TryAdd(element, migrated, "CodeAnalysisRuleSet", null) ||
+                        TryAdd(element, migrated, "DocumentationFile", null))
                     {
                         continue;
                     }
@@ -215,7 +215,8 @@
                 foreach (var element in old.Elements())
                 {
                     var localName = element.Name.LocalName;
-                    if (localName == "None")
+                    if (localName == "None" ||
+                        localName =="AdditionalFiles")
                     {
                         continue;
                     }
@@ -244,6 +245,11 @@
 
                         migrated.SetElementValue(element.Name, element.Value);
                         CopyAttributes(element, migrated.Element(element.Name));
+                        continue;
+                    }
+
+                    if (element.Descendants(XName.Get("Paket")).Any())
+                    {
                         continue;
                     }
 
