@@ -98,19 +98,25 @@
             var expected = @"<Project Sdk=""Microsoft.NET.Sdk"">
   <PropertyGroup>
     <TargetFramework>net452</TargetFramework>
-    <CodeAnalysisRuleSet>Gu.Inject.ruleset</CodeAnalysisRuleSet>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
-    <DocumentationFile>bin\$(Configuration)\$(TargetFramework)\Gu.Roslyn.Asserts.xml</DocumentationFile>
   </PropertyGroup>
-
-   <PropertyGroup Condition=""'$(Configuration)|$(Platform)'=='Debug|AnyCPU'"">
-    <WarningLevel>0</WarningLevel>
+  <PropertyGroup Condition="" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' "">
+    <CodeAnalysisRuleSet>Gu.Inject.ruleset</CodeAnalysisRuleSet>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
   </PropertyGroup>
-
-  <Import Project=""..\.paket\Paket.Restore.targets"" />
+  <PropertyGroup Condition="" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' "">
+    <Optimize>true</Optimize>
+    <CodeAnalysisRuleSet>Gu.Inject.ruleset</CodeAnalysisRuleSet>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+  </PropertyGroup>
+  <ItemGroup>
+    <AdditionalFiles Include=""stylecop.json"" />
+  </ItemGroup>
+  <Import Project=""..\.paket\paket.targets"" />
 </Project>";
 
-            Assert.AreEqual(expected,  Migrate.ProjectFile(old, "C:\\Git\\Gu.Inject\\Gu.Inject\\Gu.Inject.csproj"));
+            var actual = Migrate.ProjectFile(old, "C:\\Git\\Gu.Inject\\Gu.Inject\\Gu.Inject.csproj");
+            Assert.AreEqual(expected,  actual);
         }
 
         [TestCase("<Import Project=\"$(MSBuildExtensionsPath)\\$(MSBuildToolsVersion)\\Microsoft.Common.props\" Condition=\"Exists(\'$(MSBuildExtensionsPath)\\$(MSBuildToolsVersion)\\Microsoft.Common.props\')\" />")]

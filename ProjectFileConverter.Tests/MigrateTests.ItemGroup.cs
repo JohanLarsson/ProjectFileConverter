@@ -42,7 +42,7 @@
             }
 
             [Test]
-            public void FrameworkReferences()
+            public void DefaultFrameworkReferences()
             {
                 var element = XElement.Parse(
                     @"
@@ -53,6 +53,40 @@
 
                 Assert.AreEqual(true, Migrate.ItemGroup.TryMigrate(element, out var migrated));
                 Assert.AreEqual(null, migrated);
+            }
+
+            [Test]
+            public void FrameworkReferences()
+            {
+                var element = XElement.Parse(
+                    @"
+<ItemGroup>
+  <Reference Include=""System"" />
+  <Reference Include=""System.Core"" />
+  <Reference Include=""System.Windows"" />
+  <Reference Include=""Accessibility"" />
+  <Reference Include=""PresentationCore"" />
+  <Reference Include=""PresentationFramework"" />
+  <Reference Include=""System.Windows.Forms"" />
+  <Reference Include=""System.Xaml"" />
+  <Reference Include=""UIAutomationClient"" />
+  <Reference Include=""UIAutomationTypes"" />
+  <Reference Include=""WindowsBase"" />
+</ItemGroup>");
+
+                Assert.AreEqual(true, Migrate.ItemGroup.TryMigrate(element, out var migrated));
+                var expected = @"<ItemGroup>
+  <Reference Include=""System.Windows"" />
+  <Reference Include=""Accessibility"" />
+  <Reference Include=""PresentationCore"" />
+  <Reference Include=""PresentationFramework"" />
+  <Reference Include=""System.Windows.Forms"" />
+  <Reference Include=""System.Xaml"" />
+  <Reference Include=""UIAutomationClient"" />
+  <Reference Include=""UIAutomationTypes"" />
+  <Reference Include=""WindowsBase"" />
+</ItemGroup>";
+                Assert.AreEqual(expected, migrated.ToString());
             }
         }
     }

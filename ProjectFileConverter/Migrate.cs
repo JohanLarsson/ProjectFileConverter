@@ -210,7 +210,7 @@
                     {
                         case "None":
                             continue;
-                        case "Reference" when IsSingleAttribute(element, "Include", new Regex("System|System.Core|System.Data|System.Drawing|System.IO.Compression.FileSystem|System.Numerics|System.Runtime.Serialization|System.Xml|System.Xml.Linq")):
+                        case "Reference" when IsSingleAttribute(element, "Include", new Regex(@"^(System|System\.Core|System\.Data|System\.Drawing|System\.IO\.Compression\.FileSystem|System\.Numerics|System\.Runtime\.Serialization|System\.Xml|System\.Xml\.Linq)$")):
                             continue;
                         case "Compile" when IsSingleAttribute(element, "Include", new Regex(@"([^\\]+\\)*[^\\]+\.cs")):
                             continue;
@@ -221,7 +221,8 @@
                             continue;
                     }
 
-                    if (element.Elements().All(x => x.Name.LocalName == "Paket"))
+                    if (element.Elements().Any() &&
+                        element.Elements().All(x => x.Name.LocalName == "Paket"))
                     {
                         continue;
                     }
