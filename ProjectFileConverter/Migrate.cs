@@ -111,6 +111,12 @@
                    element.IsEmpty;
         }
 
+        private static bool HasAttribute(XElement element, string name, Regex defaultValue)
+        {
+            return TryGetSingleAttribute(element, name, out var attribute) &&
+                   defaultValue.IsMatch(attribute.Value);
+        }
+
         private static bool TryGetSingleAttribute(XElement element, string name, out XAttribute attribute)
         {
             attribute = null;
@@ -214,9 +220,9 @@
                             continue;
                         case "Reference" when IsSingleAttributeOnly(element, "Include", new Regex(@"^(System|System\.Core|System\.Data|System\.Drawing|System\.IO\.Compression\.FileSystem|System\.Numerics|System\.Runtime\.Serialization|System\.Xml|System\.Xml\.Linq)$")):
                             continue;
-                        case "Compile" when IsSingleAttributeOnly(element, "Include", new Regex(@"([^\\]+\\)*[^\\]+\.cs")):
+                        case "Compile" when HasAttribute(element, "Include", new Regex(@"([^\\]+\\)*[^\\]+\.cs")):
                             continue;
-                        case "EmbeddedResource" when IsSingleAttributeOnly(element, "Include", new Regex(@"([^\\]+\\)*[^\\]+\.resx")):
+                        case "EmbeddedResource" when HasAttribute(element, "Include", new Regex(@"([^\\]+\\)*[^\\]+\.resx")):
                             continue;
                         case "ProjectReference":
                             migrated.Add(new XElement(element.Name, element.Attribute("Include")));

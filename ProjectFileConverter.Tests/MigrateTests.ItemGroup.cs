@@ -8,7 +8,7 @@
         public class ItemGroup
         {
             [Test]
-            public void Files()
+            public void CsFiles()
             {
                 var element = XElement.Parse(
                     @"
@@ -35,6 +35,28 @@
   <Compile Include=""Settings\DisposeSettings.cs"" />
   <Compile Include=""Settings\Settings.cs"" />
   <Compile Include=""Settings\Visibility.cs"" />
+</ItemGroup>");
+
+                Assert.AreEqual(true, Migrate.ItemGroup.TryMigrate(element, out var migrated));
+                Assert.AreEqual(null, migrated);
+            }
+
+            [Test]
+            public void ResxFiles()
+            {
+                var element = XElement.Parse(
+                    @"
+<ItemGroup>
+   <Compile Include=""Properties\Resources.Designer.cs"">
+    <AutoGen>True</AutoGen>
+    <DesignTime>True</DesignTime>
+    <DependentUpon>Resources.resx</DependentUpon>
+  </Compile>
+   <EmbeddedResource Include=""Properties\Resources.resx"">
+    <Generator>PublicResXFileCodeGenerator</Generator>
+    <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+    <SubType>Designer</SubType>
+  </EmbeddedResource>
 </ItemGroup>");
 
                 Assert.AreEqual(true, Migrate.ItemGroup.TryMigrate(element, out var migrated));
