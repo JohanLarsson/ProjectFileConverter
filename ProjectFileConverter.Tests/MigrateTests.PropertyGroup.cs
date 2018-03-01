@@ -25,13 +25,11 @@
   <FileAlignment>512</FileAlignment>
 </PropertyGroup>");
 
-                var errorBuilder = new StringBuilder();
-                Assert.AreEqual(true, Migrate.PropertyGroup.TryMigrate(element, errorBuilder, out var migrated));
-                Assert.AreEqual("", errorBuilder.ToString());
+                Assert.AreEqual(true, Migrate.PropertyGroup.TryMigrate(element, "C:\\Git\\Gu.Inject\\Gu.Inject\\Gu.Inject.csproj", out var migrated));
                 var expected = @"
 <PropertyGroup>
-  <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
   <TargetFramework>net452</TargetFramework>
+  <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
 </PropertyGroup>";
                 Assert.AreEqual(expected.TrimStart(new[] { ' ', '\r', '\n' }), migrated.ToString());
             }
@@ -53,14 +51,12 @@
   <DocumentationFile>bin\Debug\Gu.Inject.xml</DocumentationFile>
 </PropertyGroup>");
 
-                var errorBuilder = new StringBuilder();
-                Assert.AreEqual(true, Migrate.PropertyGroup.TryMigrate(element, errorBuilder, out var migrated));
-                Assert.AreEqual("", errorBuilder.ToString());
+                Assert.AreEqual(true, Migrate.PropertyGroup.TryMigrate(element, "C:\\Git\\Gu.Inject\\Gu.Inject\\Gu.Inject.csproj", out var migrated));
 
                 var expected = @"
 <PropertyGroup Condition="" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' "">
   <CodeAnalysisRuleSet>Gu.Inject.ruleset</CodeAnalysisRuleSet>
-  <DocumentationFile>bin\Debug\Gu.Inject.xml</DocumentationFile>
+  <GenerateDocumentationFile>true</GenerateDocumentationFile>
 </PropertyGroup>";
                 Assert.AreEqual(expected.TrimStart(new[] { ' ', '\r', '\n' }), migrated.ToString());
             }
@@ -81,15 +77,13 @@
   <DocumentationFile>bin\Release\Gu.Inject.xml</DocumentationFile>
 </PropertyGroup>");
 
-                var errorBuilder = new StringBuilder();
-                Assert.AreEqual(true, Migrate.PropertyGroup.TryMigrate(element, errorBuilder, out var migrated));
-                Assert.AreEqual("", errorBuilder.ToString());
+                Assert.AreEqual(true, Migrate.PropertyGroup.TryMigrate(element, "C:\\Git\\Gu.Inject\\Gu.Inject\\Gu.Inject.csproj", out var migrated));
 
                 var expected = @"
 <PropertyGroup Condition="" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' "">
   <Optimize>true</Optimize>
   <CodeAnalysisRuleSet>Gu.Inject.ruleset</CodeAnalysisRuleSet>
-  <DocumentationFile>bin\Release\Gu.Inject.xml</DocumentationFile>
+  <GenerateDocumentationFile>true</GenerateDocumentationFile>
 </PropertyGroup>";
                 Assert.AreEqual(expected.TrimStart(new[] { ' ', '\r', '\n' }), migrated.ToString());
             }

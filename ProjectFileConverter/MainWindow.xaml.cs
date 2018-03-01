@@ -7,7 +7,7 @@
 
     public partial class MainWindow : Window
     {
-        private const string Filter = "(*.csproj)|*.csproj|All files (*.*)|*.*";
+        private const string Filter = "*.csproj|*.csproj|All files (*.*)|*.*";
         private string fileName;
 
         public MainWindow()
@@ -26,9 +26,7 @@
                 var vm = (ViewModel)this.DataContext;
                 this.fileName = dialog.FileName;
                 vm.Original = File.ReadAllText(this.fileName);
-                Migrate.TryMigrateProjectFile(vm.Original, out var migrated, out var error);
-                vm.Migrated = migrated;
-                vm.Error = error;
+                vm.Migrated = Migrate.ProjectFile(vm.Original, this.fileName);
             }
             else
             {

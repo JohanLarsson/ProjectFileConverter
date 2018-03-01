@@ -4,7 +4,6 @@
     {
         private string original;
         private string migrated;
-        private string error;
 
         public event System.ComponentModel.PropertyChangedEventHandler PropertyChanged;
 
@@ -35,21 +34,6 @@
 
                 migrated = value;
                 OnPropertyChanged();
-            }
-        }
-
-        public string Error
-        {
-            get => this.error;
-            set
-            {
-                if (value == this.error)
-                {
-                    return;
-                }
-
-                this.error = value;
-                this.OnPropertyChanged();
             }
         }
 

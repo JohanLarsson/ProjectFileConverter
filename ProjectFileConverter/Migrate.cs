@@ -1,69 +1,78 @@
 ﻿namespace ProjectFileConverter
 {
+    using System.IO;
     using System.Linq;
-    using System.Text;
     using System.Text.RegularExpressions;
     using System.Xml.Linq;
 
     public static class Migrate
     {
-        public static bool TryMigrateProjectFile(string xml, out string migrated, out string error)
+        public static string ProjectFile(FileInfo csproj)
+        {
+            return ProjectFile(File.ReadAllText(csproj.FullName), csproj.FullName);
+        }
+
+        public static string ProjectFile(string xml, string fileName)
         {
             var original = XDocument.Parse(xml.Replace("xmlns=\"http://schemas.microsoft.com/developer/msbuild/2003\"", string.Empty));
             var root = new XElement(XName.Get("Project"));
             root.SetAttributeValue(XName.Get("Sdk"), "Microsoft.NET.Sdk");
-            var errorBuilder = new StringBuilder();
             foreach (var element in original.Root.Elements())
             {
-                if (PropertyGroup.TryMigrate(element, errorBuilder, out var migratedElement))
+                var localName = element.Name.LocalName;
+                switch (localName)
                 {
-                    if (migratedElement != null)
-                    {
-                        root.Add(migratedElement);
-                    }
+                    case "PropertyGroup":
+                        {
+                            if (PropertyGroup.TryMigrate(element, fileName, out var migratedElement))
+                            {
+                                if (migratedElement != null)
+                                {
+                                    root.Add(migratedElement);
+                                }
+                            }
 
-                    continue;
-                }
+                            continue;
+                        }
 
-                if (ItemGroup.TryMigrate(element, errorBuilder, out migratedElement))
-                {
-                    if (migratedElement != null)
-                    {
-                        root.Add(migratedElement);
-                    }
+                    case "ItemGroup":
+                        {
+                            if (ItemGroup.TryMigrate(element, out var migratedElement))
+                            {
+                                if (migratedElement != null)
+                                {
+                                    root.Add(migratedElement);
+                                }
+                            }
 
-                    continue;
-                }
+                            continue;
+                        }
 
-                if (element.Name.LocalName == "Choose")
-                {
-                    continue;
-                }
-
-                if (element.HasAttributes &&
-                    !element.HasElements)
-                {
-                    var elementXml = element.ToString();
-                    if (elementXml == "<Import Project=\"$(MSBuildExtensionsPath)\\$(MSBuildToolsVersion)\\Microsoft.Common.props\" Condition=\"Exists(\'$(MSBuildExtensionsPath)\\$(MSBuildToolsVersion)\\Microsoft.Common.props\')\" />" ||
-                        elementXml == "<Import Project=\"$(MSBuildToolsPath)\\Microsoft.CSharp.targets\" />" ||
-                        elementXml == "<Import Project=\"$(VSToolsPath)\\TeamTest\\Microsoft.TestTools.targets\" Condition=\"Exists(\'$(VSToolsPath)\\TeamTest\\Microsoft.TestTools.targets\')\" />")
-                    {
+                    case "Choose":
                         continue;
-                    }
+                    case "Import":
+                        {
+                            if (element.Attribute(XName.Get("Project")) is XAttribute pa)
+                            {
+                                switch (pa.Value)
+                                {
+                                    case "$(MSBuildExtensionsPath)\\$(MSBuildToolsVersion)\\Microsoft.Common.props":
+                                    case "$(MSBuildToolsPath)\\Microsoft.CSharp.targets":
+                                    case "$(VSToolsPath)\\TeamTest\\Microsoft.TestTools.targets":
+                                        continue;
 
-                    if (elementXml == "<Import Project=\"..\\.paket\\paket.targets\" />")
-                    {
-                        root.Add(element);
-                        continue;
-                    }
+                                }
+                            }
+
+                            break;
+                        }
+
                 }
 
-                errorBuilder.AppendLine($"Unknown element in root: {element.Name}");
+                root.Add(element);
             }
 
-            migrated = new XDocument(root).ToString();
-            error = errorBuilder.ToString();
-            return errorBuilder.Length == 0;
+            return new XDocument(root).ToString();
         }
 
         private static void CopyAttributes(XElement source, XElement target)
@@ -74,24 +83,48 @@
             }
         }
 
-        private static bool TryAdd(XElement element, XElement migrated, string name, string defaultValue)
-        {
-            if (element.Name.LocalName == name)
-            {
-                if (element.Value != defaultValue)
-                {
-                    migrated.Add(element);
-                }
 
-                return true;
+        private static bool IsDefault(XElement element, string name, string defaultValue)
+        {
+            return element.Name.LocalName == name &&
+                   element.Value == defaultValue &&
+                   !element.HasAttributes &&
+                   !element.HasElements;
+
+        }
+
+        private static bool IsDefault(XElement element, string name, Regex defaultValue)
+        {
+            return element.Name.LocalName == name &&
+                   defaultValue.IsMatch(element.Value) &&
+                   !element.HasAttributes &&
+                   !element.HasElements;
+
+        }
+
+
+        private static bool IsSingleAttribute(XElement element, string name, Regex defaultValue)
+        {
+            return TryGetSingleAttribute(element, name, out var attribute) &&
+                   defaultValue.IsMatch(attribute.Value) &&
+                   !element.HasElements &&
+                   element.IsEmpty;
+        }
+
+        private static bool TryGetSingleAttribute(XElement element, string name, out XAttribute attribute)
+        {
+            attribute = null;
+            if (element.Attributes().Count() == 1)
+            {
+                attribute = element.Attribute(XName.Get(name));
             }
 
-            return false;
+            return attribute != null;
         }
 
         public static class PropertyGroup
         {
-            public static bool TryMigrate(XElement old, StringBuilder error, out XElement migrated)
+            public static bool TryMigrate(XElement old, string fileName, out XElement migrated)
             {
                 // http://www.natemcmaster.com/blog/2017/03/09/vs2015-to-vs2017-upgrade/#propertygroup
                 if (old.Name.LocalName != "PropertyGroup")
@@ -100,70 +133,52 @@
                     return false;
                 }
 
-                var errorLength = error.Length;
                 migrated = new XElement(old.Name);
                 CopyAttributes(old, migrated);
 
                 foreach (var element in old.Elements())
                 {
-                    var localName = element.Name.LocalName;
-                    if (localName == "TargetFrameworkVersion")
-                    {
-                        if (TryGetVersion(element.Value, out var version))
-                        {
-                            migrated.SetElementValue(XName.Get("TargetFramework"), version);
-                        }
-                        else
-                        {
-                            error.AppendLine($"Unknown version: {element}");
-                        }
-
-                        continue;
-                    }
-
-                    if (localName == "ProjectGuid")
-                    {
-                        migrated.SetElementValue(XName.Get("GenerateAssemblyInfo"), false);
-                        continue;
-                    }
-
-                    if (localName == "AssemblyName" ||
-                        localName == "RootNamespace" ||
-                        localName == "Configuration" ||
-                        localName == "AppDesignerFolder" ||
-                        localName == "Platform" ||
-                        localName == "DebugSymbols" ||
-                        localName == "DebugType" ||
-                        localName == "OutputPath" ||
-                        localName == "DefineConstants" ||
-                        localName == "ProjectTypeGuids")
+                    if (IsDefault(element, "AssemblyName", Path.GetFileNameWithoutExtension(fileName)) ||
+                        IsDefault(element, "DefineConstants", new Regex("DEBUG;TRACE|TRACE")) ||
+                        IsDefault(element, "FileAlignment", "512") ||
+                        IsDefault(element, "ErrorReport", "prompt") ||
+                        IsDefault(element, "Optimize", "false") ||
+                        IsDefault(element, "OutputPath", new Regex(@"bin\\(Debug|Release)\\")) ||
+                        IsDefault(element, "OutputType", "Library") ||
+                        IsDefault(element, "RootNamespace", Path.GetFileNameWithoutExtension(fileName)) ||
+                        IsDefault(element, "WarningLevel", "4"))
                     {
                         continue;
                     }
 
-                    if (localName == "NoWarn")
+                    switch (element.Name.LocalName)
                     {
-                        migrated.Add(element);
-                        continue;
+                        case "DocumentationFile" when Regex.IsMatch(element.Value, $@"bin\\(Debug|Release)\\{Path.GetFileNameWithoutExtension(fileName)}.xml"):
+                            migrated.SetElementValue(XName.Get("GenerateDocumentationFile"), true);
+                            continue;
+                        case "TargetFrameworkVersion":
+                            migrated.SetElementValue(XName.Get("TargetFramework"), element.Value.Replace("v","net").Replace(".", string.Empty));
+                            migrated.SetElementValue(XName.Get("GenerateAssemblyInfo"), false);
+                            continue;
+
+                        case "AppDesignerFolder":
+                        case "Configuration":
+                        case "DebugSymbols":
+                        case "DebugType":
+                        case "IsCodedUITest":
+                        case "NuGetPackageImportStamp":
+                        case "Platform":
+                        case "ProjectGuid":
+                        case "ProjectTypeGuids":
+                        case "ReferencePath":
+                        case "TargetFrameworkProfile":
+                        case "TestProjectType":
+                        case "VisualStudioVersion":
+                        case "VSToolsPath":
+                            continue;
                     }
 
-                    if (TryAdd(element, migrated, "FileAlignment", "512") ||
-                        TryAdd(element, migrated, "WarningLevel", "4") ||
-                        TryAdd(element, migrated, "ErrorReport", "prompt") ||
-                        TryAdd(element, migrated, "FileAlignment", "512") ||
-                        TryAdd(element, migrated, "OutputType", "Library") ||
-                        TryAdd(element, migrated, "Optimize", "false") ||
-                        TryAdd(element, migrated, "AutoGenerateBindingRedirects", "false") ||
-                        TryAdd(element, migrated, "TargetFrameworkProfile", string.Empty) ||
-                        TryAdd(element, migrated, "SignAssembly", null) ||
-                        TryAdd(element, migrated, "AssemblyOriginatorKeyFile", null) ||
-                        TryAdd(element, migrated, "CodeAnalysisRuleSet", null) ||
-                        TryAdd(element, migrated, "DocumentationFile", null))
-                    {
-                        continue;
-                    }
-
-                    error.AppendLine($"Unknown element in PropertyGroup: {element}");
+                    migrated.Add(element);
                 }
 
                 if (!migrated.HasElements)
@@ -171,35 +186,13 @@
                     migrated = null;
                 }
 
-                return errorLength == error.Length;
-            }
-
-            private static bool TryGetVersion(string version, out string mapped)
-            {
-                switch (version)
-                {
-                    case "v4.5":
-                        mapped = "net45";
-                        return true;
-                    case "v4.5.2":
-                        mapped = "net452";
-                        return true;
-                    case "v4.6":
-                        mapped = "net46";
-                        return true;
-                    case "v4.6.1":
-                        mapped = "net461";
-                        return true;
-                    default:
-                        mapped = null;
-                        return false;
-                }
+                return true;
             }
         }
 
         public static class ItemGroup
         {
-            public static bool TryMigrate(XElement old, StringBuilder error, out XElement migrated)
+            public static bool TryMigrate(XElement old, out XElement migrated)
             {
                 // http://www.natemcmaster.com/blog/2017/03/09/vs2015-to-vs2017-upgrade/#that-massive-list-of-files
                 if (old.Name.LocalName != "ItemGroup")
@@ -208,63 +201,32 @@
                     return false;
                 }
 
-                var errorLength = error.Length;
                 migrated = new XElement(old.Name);
                 CopyAttributes(old, migrated);
 
                 foreach (var element in old.Elements())
                 {
-                    var localName = element.Name.LocalName;
-                    if (localName == "None" ||
-                        localName =="AdditionalFiles")
+                    switch (element.Name.LocalName)
+                    {
+                        case "None":
+                            continue;
+                        case "Reference" when IsSingleAttribute(element, "Include", new Regex("System|System.Core|System.Data|System.Drawing|System.IO.Compression.FileSystem|System.Numerics|System.Runtime.Serialization|System.Xml|System.Xml.Linq")):
+                            continue;
+                        case "Compile" when IsSingleAttribute(element, "Include", new Regex(@"([^\\]+\\)*[^\\]+\.cs")):
+                            continue;
+                        case "EmbeddedResource" when IsSingleAttribute(element, "Include", new Regex(@"([^\\]+\\)*[^\\]+\.resx")):
+                            continue;
+                        case "ProjectReference":
+                            migrated.Add(new XElement(element.Name, element.Attribute("Include")));
+                            continue;
+                    }
+
+                    if (element.Elements().All(x => x.Name.LocalName == "Paket"))
                     {
                         continue;
                     }
 
-                    if (localName == "Reference")
-                    {
-                        if (element.Value == string.Empty &&
-                            !element.HasElements &&
-                            element.HasAttributes &&
-                            element.Attributes().Count() == 1 &&
-                            element.Attribute(XName.Get("Include")) is XAttribute attribute)
-                        {
-                            if (attribute.Value == "System" ||
-                                attribute.Value == "System.Core" ||
-                                attribute.Value == "System.Data" ||
-                                attribute.Value == "System.Drawing" ||
-                                attribute.Value == "System.IO.Compression.FileSystem" ||
-                                attribute.Value == "System.Numerics" ||
-                                attribute.Value == "System.Runtime.Serialization" ||
-                                attribute.Value == "System.Xml" ||
-                                attribute.Value == "System.Xml.Linq")
-                            {
-                                continue;
-                            }
-                        }
-
-                        migrated.SetElementValue(element.Name, element.Value);
-                        CopyAttributes(element, migrated.Element(element.Name));
-                        continue;
-                    }
-
-                    if (element.Descendants(XName.Get("Paket")).Any())
-                    {
-                        continue;
-                    }
-
-                    var elementXml = element.ToString();
-                    if (Regex.IsMatch(elementXml, @"<Compile Include=""([^\\]+\\)*[^\\]+\.cs"" />"))
-                    {
-                        continue;
-                    }
-
-                    if (Regex.IsMatch(elementXml, @"<EmbeddedResource Include=""([^\\]+\\)*[^\\]+\.resx"" />"))
-                    {
-                        continue;
-                    }
-
-                    error.AppendLine($"Unknown element in ItemGroup: {element}");
+                    migrated.Add(element);
                 }
 
                 if (!migrated.HasElements)
@@ -272,7 +234,7 @@
                     migrated = null;
                 }
 
-                return errorLength == error.Length;
+                return true;
             }
         }
     }

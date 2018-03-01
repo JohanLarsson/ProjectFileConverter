@@ -1,6 +1,5 @@
 ﻿namespace ProjectFileConverter.Tests
 {
-    using System.Text;
     using System.Xml.Linq;
     using NUnit.Framework;
 
@@ -38,9 +37,7 @@
   <Compile Include=""Settings\Visibility.cs"" />
 </ItemGroup>");
 
-                var errorBuilder = new StringBuilder();
-                Assert.AreEqual(true, Migrate.ItemGroup.TryMigrate(element, errorBuilder, out var migrated));
-                Assert.AreEqual("", errorBuilder.ToString());
+                Assert.AreEqual(true, Migrate.ItemGroup.TryMigrate(element, out var migrated));
                 Assert.AreEqual(null, migrated);
             }
 
@@ -54,9 +51,7 @@
   <Reference Include=""System.Core"" />
 </ItemGroup>");
 
-                var errorBuilder = new StringBuilder();
-                Assert.AreEqual(true, Migrate.ItemGroup.TryMigrate(element, errorBuilder, out var migrated));
-                Assert.AreEqual("", errorBuilder.ToString());
+                Assert.AreEqual(true, Migrate.ItemGroup.TryMigrate(element, out var migrated));
                 Assert.AreEqual(null, migrated);
             }
         }
