@@ -1,6 +1,5 @@
 ﻿namespace ProjectFileConverter.Tests
 {
-    using System.Text;
     using System.Xml.Linq;
     using NUnit.Framework;
 

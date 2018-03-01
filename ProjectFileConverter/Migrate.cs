@@ -103,7 +103,7 @@
         }
 
 
-        private static bool IsSingleAttribute(XElement element, string name, Regex defaultValue)
+        private static bool IsSingleAttributeOnly(XElement element, string name, Regex defaultValue)
         {
             return TryGetSingleAttribute(element, name, out var attribute) &&
                    defaultValue.IsMatch(attribute.Value) &&
@@ -157,7 +157,7 @@
                             migrated.SetElementValue(XName.Get("GenerateDocumentationFile"), true);
                             continue;
                         case "TargetFrameworkVersion":
-                            migrated.SetElementValue(XName.Get("TargetFramework"), element.Value.Replace("v","net").Replace(".", string.Empty));
+                            migrated.SetElementValue(XName.Get("TargetFramework"), element.Value.Replace("v", "net").Replace(".", string.Empty));
                             migrated.SetElementValue(XName.Get("GenerateAssemblyInfo"), false);
                             continue;
 
@@ -192,6 +192,8 @@
 
         public static class ItemGroup
         {
+            private const string NameAndVersionPattern = @"(?<name>[^,]+), Version=(?<version>\d+(.\d+)*)(.0)*";
+
             public static bool TryMigrate(XElement old, out XElement migrated)
             {
                 // http://www.natemcmaster.com/blog/2017/03/09/vs2015-to-vs2017-upgrade/#that-massive-list-of-files
@@ -210,14 +212,26 @@
                     {
                         case "None":
                             continue;
-                        case "Reference" when IsSingleAttribute(element, "Include", new Regex(@"^(System|System\.Core|System\.Data|System\.Drawing|System\.IO\.Compression\.FileSystem|System\.Numerics|System\.Runtime\.Serialization|System\.Xml|System\.Xml\.Linq)$")):
+                        case "Reference" when IsSingleAttributeOnly(element, "Include", new Regex(@"^(System|System\.Core|System\.Data|System\.Drawing|System\.IO\.Compression\.FileSystem|System\.Numerics|System\.Runtime\.Serialization|System\.Xml|System\.Xml\.Linq)$")):
                             continue;
-                        case "Compile" when IsSingleAttribute(element, "Include", new Regex(@"([^\\]+\\)*[^\\]+\.cs")):
+                        case "Compile" when IsSingleAttributeOnly(element, "Include", new Regex(@"([^\\]+\\)*[^\\]+\.cs")):
                             continue;
-                        case "EmbeddedResource" when IsSingleAttribute(element, "Include", new Regex(@"([^\\]+\\)*[^\\]+\.resx")):
+                        case "EmbeddedResource" when IsSingleAttributeOnly(element, "Include", new Regex(@"([^\\]+\\)*[^\\]+\.resx")):
                             continue;
                         case "ProjectReference":
                             migrated.Add(new XElement(element.Name, element.Attribute("Include")));
+                            continue;
+                        case "Reference" when TryGetSingleAttribute(element, "Include", out var include) &&
+                                              Regex.IsMatch(include.Value, NameAndVersionPattern):
+                            migrated.Add(
+                                new XElement(
+                                    XName.Get("PackageReference"),
+                                    new XAttribute(
+                                        XName.Get("Include"),
+                                        Regex.Match(include.Value, NameAndVersionPattern).Groups["name"].Value),
+                                    new XAttribute(
+                                        XName.Get("Version"),
+                                        Regex.Match(include.Value, NameAndVersionPattern, RegexOptions.RightToLeft).Groups["version"].Value)));
                             continue;
                     }
 

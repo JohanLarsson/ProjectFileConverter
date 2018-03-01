@@ -88,6 +88,63 @@
 </ItemGroup>";
                 Assert.AreEqual(expected, migrated.ToString());
             }
+
+            [Test]
+            public void ProjectReference()
+            {
+                var element = XElement.Parse(
+                    @"
+<ItemGroup>
+  <ProjectReference Include=""..\Gu.Inject\Gu.Inject.csproj"">
+    <Project>{8953C8E1-0819-4EB8-B10C-5286DEB0E079}</Project>
+    <Name>Gu.Inject</Name>
+  </ProjectReference>
+</ItemGroup>");
+
+                Assert.AreEqual(true, Migrate.ItemGroup.TryMigrate(element, out var migrated));
+                var expected = @"<ItemGroup>
+  <ProjectReference Include=""..\Gu.Inject\Gu.Inject.csproj"" />
+</ItemGroup>";
+                Assert.AreEqual(expected, migrated.ToString());
+            }
+
+            [Test]
+            public void AnalyzersPaket()
+            {
+                var element = XElement.Parse(
+                    @"
+<ItemGroup>
+  <Analyzer Include=""..\packages\analyzers\Gu.Analyzers\analyzers\dotnet\cs\Gu.Analyzers.Analyzers.dll"">
+    <Paket>True</Paket>
+  </Analyzer>
+  <Analyzer Include=""..\packages\analyzers\Gu.Analyzers\analyzers\dotnet\cs\Gu.Analyzers.CodeFixes.dll"">
+    <Paket>True</Paket>
+  </Analyzer>
+</ItemGroup>");
+
+                Assert.AreEqual(true, Migrate.ItemGroup.TryMigrate(element, out var migrated));
+                Assert.AreEqual(null, migrated);
+            }
+
+            [Test]
+            public void NugetReferences()
+            {
+                var element = XElement.Parse(
+                    @"
+<ItemGroup>
+  <None Include=""packages.config"" />
+  <Reference Include=""MySql.Data, Version=6.9.9.0, Culture=neutral, PublicKeyToken=c5687fc88969c44d, processorArchitecture=MSIL"">
+    <HintPath>..\..\packages\MySql.Data.6.9.9\lib\net45\MySql.Data.dll</HintPath>
+    <Private>True</Private>
+  </Reference>
+</ItemGroup>");
+
+                Assert.AreEqual(true, Migrate.ItemGroup.TryMigrate(element, out var migrated));
+                var expected = @"<ItemGroup>
+  <PackageReference Include=""MySql.Data"" Version=""6.9.9"" />
+</ItemGroup>";
+                Assert.AreEqual(expected, migrated.ToString());
+            }
         }
     }
 }
