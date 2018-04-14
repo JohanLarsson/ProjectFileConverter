@@ -2,6 +2,8 @@
 {
     using System.IO;
     using System.Windows;
+    using System.Windows.Controls;
+    using System.Windows.Data;
     using System.Windows.Input;
     using Microsoft.Win32;
 
@@ -46,6 +48,7 @@
 
         private void OnSave(object sender, ExecutedRoutedEventArgs e)
         {
+            BindingOperations.GetBindingExpression(this.Migrated, TextBox.TextProperty)?.UpdateSource();
             var vm = (ViewModel)this.DataContext;
             File.WriteAllText(this.fileName, vm.Migrated);
             e.Handled = true;

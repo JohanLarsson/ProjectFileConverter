@@ -30,6 +30,7 @@
                 <MenuItem Command="Save" Header="_Save" />
             </MenuItem>
         </Menu>
+
         <Grid Grid.Row="1">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition />
@@ -43,7 +44,7 @@
             </GroupBox>
 
             <GroupBox Grid.Column="1" Header="Migrated">
-                <TextBox AcceptsReturn="True" Text="{Binding Migrated}" />
+                <TextBox AcceptsReturn="True" Text="{Binding Migrated}" x:Name="Migrated"/>
             </GroupBox>
         </Grid>
     </Grid>
