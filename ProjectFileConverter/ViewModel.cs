@@ -18,28 +18,28 @@
                 }
 
                 this.original = value;
-                OnPropertyChanged();
+                this.OnPropertyChanged();
             }
         }
 
         public string Migrated
         {
-            get => migrated;
+            get => this.migrated;
             set
             {
-                if (value == migrated)
+                if (value == this.migrated)
                 {
                     return;
                 }
 
-                migrated = value;
-                OnPropertyChanged();
+                this.migrated = value;
+                this.OnPropertyChanged();
             }
         }
 
         protected virtual void OnPropertyChanged([System.Runtime.CompilerServices.CallerMemberName] string propertyName = null)
         {
-            PropertyChanged?.Invoke(this, new System.ComponentModel.PropertyChangedEventArgs(propertyName));
+            this.PropertyChanged?.Invoke(this, new System.ComponentModel.PropertyChangedEventArgs(propertyName));
         }
     }
 }
