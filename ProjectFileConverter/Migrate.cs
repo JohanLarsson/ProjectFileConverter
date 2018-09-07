@@ -62,13 +62,11 @@
                                     case "$(MSBuildToolsPath)\\Microsoft.CSharp.targets":
                                     case "$(VSToolsPath)\\TeamTest\\Microsoft.TestTools.targets":
                                         continue;
-
                                 }
                             }
 
                             break;
                         }
-
                 }
 
                 root.Add(element);
@@ -83,14 +81,12 @@
                 index > 0)
             {
                 var builder = new StringBuilder(csproj);
-                if (csproj.Contains("<OutputType>Exe</OutputType>"))
-                {
-                    builder.Insert(index, $"{Environment.NewLine}    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>");
-                }
-                else
-                {
-                    builder.Insert(index, $"{Environment.NewLine}    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>{Environment.NewLine}    <GenerateBindingRedirectsOutputType>true</GenerateBindingRedirectsOutputType>");
-                }
+                builder.Insert(
+                    index,
+                    csproj.Contains("<OutputType>Exe</OutputType>")
+                        ? $"{Environment.NewLine}    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>"
+                        : $"{Environment.NewLine}    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>{Environment.NewLine}    <GenerateBindingRedirectsOutputType>true</GenerateBindingRedirectsOutputType>");
+
                 return builder.ToString();
             }
 
@@ -111,7 +107,6 @@
                    element.Value == defaultValue &&
                    !element.HasAttributes &&
                    !element.HasElements;
-
         }
 
         private static bool IsDefault(XElement element, string name, Regex defaultValue)
@@ -120,7 +115,6 @@
                    defaultValue.IsMatch(element.Value) &&
                    !element.HasAttributes &&
                    !element.HasElements;
-
         }
 
         private static bool IsSingleAttributeOnly(XElement element, string name, Regex defaultValue)

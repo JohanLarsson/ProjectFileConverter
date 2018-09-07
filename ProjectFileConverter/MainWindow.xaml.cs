@@ -40,7 +40,6 @@
             e.Handled = true;
         }
 
-
         private void OnCanSave(object sender, CanExecuteRoutedEventArgs e)
         {
             var vm = (ViewModel)this.DataContext;
