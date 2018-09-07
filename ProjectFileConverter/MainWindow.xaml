@@ -44,7 +44,19 @@
             </GroupBox>
 
             <GroupBox Grid.Column="1" Header="Migrated">
-                <TextBox AcceptsReturn="True" Text="{Binding Migrated}" x:Name="Migrated"/>
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+                    <TextBox
+                        x:Name="Migrated"
+                        AcceptsReturn="True"
+                        Text="{Binding Migrated}" />
+                    <UniformGrid Grid.Row="1">
+                        <Button Command="{Binding RemoveAssemblyInfoCommand}" Content="Remove AssemblyInfo.cs" />
+                    </UniformGrid>
+                </Grid>
             </GroupBox>
         </Grid>
     </Grid>
