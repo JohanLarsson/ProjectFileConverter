@@ -12,14 +12,22 @@
 
         public ViewModel()
         {
-            this.RemoveAssemblyInfoCommand = new RelayCommand(this.RemoveAssemblyInfo,
-                () => this.migrated.Contains("<GenerateAssemblyInfo>false</GenerateAssemblyInfo>") ||
-                     !this.TryGetAssemblyInfo(out _));
+            this.RemoveAssemblyInfoCommand = new RelayCommand(
+                this.RemoveAssemblyInfo,
+                () => !string.IsNullOrEmpty(this.migrated) &&
+                      !this.migrated.Contains("<GenerateAssemblyInfo>false</GenerateAssemblyInfo>") &&
+                      this.TryGetAssemblyInfo(out _));
+            this.AddAutoGenerateBindingRedirectsCommand = new RelayCommand(
+                () => this.Migrated = Migrate.WithAutoGenerateBindingRedirects(this.migrated),
+                () => !string.IsNullOrEmpty(this.migrated) &&
+                      !this.migrated.Contains("<AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>"));
         }
 
         public event System.ComponentModel.PropertyChangedEventHandler PropertyChanged;
 
         public ICommand RemoveAssemblyInfoCommand { get; }
+
+        public ICommand AddAutoGenerateBindingRedirectsCommand { get; }
 
         public string FileName
         {

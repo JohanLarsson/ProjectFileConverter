@@ -153,7 +153,6 @@
             Assert.AreEqual(expected,  Migrate.ProjectFile(old, string.Empty));
         }
 
-
         [Test]
         public void KeepsPaketTarget()
         {
@@ -166,6 +165,53 @@
   <Import Project=""..\.paket\Paket.Restore.targets"" />
 </Project>";
             Assert.AreEqual(expected,  Migrate.ProjectFile(old, string.Empty));
+        }
+
+        [Test]
+        public void WithAutoGenerateBindingRedirectsDllProject()
+        {
+            var csproj = @"<Project Sdk=""Microsoft.NET.Sdk"">
+  <PropertyGroup>
+    <TargetFramework>net452</TargetFramework>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+  </PropertyGroup>
+</Project>";
+
+            var expected = @"<Project Sdk=""Microsoft.NET.Sdk"">
+  <PropertyGroup>
+    <TargetFramework>net452</TargetFramework>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
+    <GenerateBindingRedirectsOutputType>true</GenerateBindingRedirectsOutputType>
+  </PropertyGroup>
+</Project>";
+
+            var actual = Migrate.WithAutoGenerateBindingRedirects(csproj);
+            Assert.AreEqual(expected, actual);
+        }
+
+        [Test]
+        public void WithAutoGenerateBindingRedirectsExeProject()
+        {
+            var csproj = @"<Project Sdk=""Microsoft.NET.Sdk"">
+  <PropertyGroup>
+    <TargetFramework>net452</TargetFramework>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <OutputType>Exe</OutputType>
+  </PropertyGroup>
+</Project>";
+
+            var expected = @"<Project Sdk=""Microsoft.NET.Sdk"">
+  <PropertyGroup>
+    <TargetFramework>net452</TargetFramework>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <OutputType>Exe</OutputType>
+    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
+  </PropertyGroup>
+</Project>";
+
+            var actual = Migrate.WithAutoGenerateBindingRedirects(csproj);
+            Assert.AreEqual(expected, actual);
         }
     }
 }

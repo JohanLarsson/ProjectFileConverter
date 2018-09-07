@@ -1,7 +1,9 @@
 ﻿namespace ProjectFileConverter
 {
+    using System;
     using System.IO;
     using System.Linq;
+    using System.Text;
     using System.Text.RegularExpressions;
     using System.Xml.Linq;
 
@@ -75,6 +77,26 @@
             return new XDocument(root).ToString();
         }
 
+        public static string WithAutoGenerateBindingRedirects(string csproj)
+        {
+            if (csproj.IndexOf($"{Environment.NewLine}  </PropertyGroup>") is var index &&
+                index > 0)
+            {
+                var builder = new StringBuilder(csproj);
+                if (csproj.Contains("<OutputType>Exe</OutputType>"))
+                {
+                    builder.Insert(index, $"{Environment.NewLine}    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>");
+                }
+                else
+                {
+                    builder.Insert(index, $"{Environment.NewLine}    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>{Environment.NewLine}    <GenerateBindingRedirectsOutputType>true</GenerateBindingRedirectsOutputType>");
+                }
+                return builder.ToString();
+            }
+
+            return csproj;
+        }
+
         private static void CopyAttributes(XElement source, XElement target)
         {
             foreach (var attribute in source.Attributes())
@@ -82,7 +104,6 @@
                 target.SetAttributeValue(attribute.Name, attribute.Value);
             }
         }
-
 
         private static bool IsDefault(XElement element, string name, string defaultValue)
         {
@@ -101,7 +122,6 @@
                    !element.HasElements;
 
         }
-
 
         private static bool IsSingleAttributeOnly(XElement element, string name, Regex defaultValue)
         {

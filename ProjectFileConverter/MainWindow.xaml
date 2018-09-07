@@ -55,6 +55,7 @@
                         Text="{Binding Migrated}" />
                     <UniformGrid Grid.Row="1">
                         <Button Command="{Binding RemoveAssemblyInfoCommand}" Content="Remove AssemblyInfo.cs" />
+                        <Button Command="{Binding AddAutoGenerateBindingRedirectsCommand}" Content="Add AutoGenerateBindingRedirects" />
                     </UniformGrid>
                 </Grid>
             </GroupBox>
