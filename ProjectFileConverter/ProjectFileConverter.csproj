@@ -3,9 +3,10 @@
     <OutputType>WinExe</OutputType>
     <TargetFramework>netcoreapp3.0</TargetFramework>
     <UseWPF>true</UseWPF>
-    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
     <CodeAnalysisRuleSet>ProjectFileConverter.ruleset</CodeAnalysisRuleSet>
+    <Authors>Johan Larsson</Authors>
+    <Copyright>Johan Larsson 2018</Copyright>
   </PropertyGroup>
 
   <ItemGroup>
