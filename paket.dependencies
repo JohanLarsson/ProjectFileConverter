@@ -1,4 +1,0 @@
-source https://api.nuget.org/v3/index.json
-
-nuget NUnit 3.9.0
-nuget PropertyChangedAnalyzers 2.5.2.0 restriction: >= net461
