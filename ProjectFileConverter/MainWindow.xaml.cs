@@ -20,7 +20,7 @@
         {
             var dialog = new OpenFileDialog
             {
-                Filter = Filter
+                Filter = Filter,
             };
             if (dialog.ShowDialog(this) == true)
             {
