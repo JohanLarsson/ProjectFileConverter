@@ -3,18 +3,18 @@
     <OutputType>WinExe</OutputType>
     <TargetFramework>netcoreapp3.0</TargetFramework>
     <UseWPF>true</UseWPF>
-    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
+    <PublishSingleFile>true</PublishSingleFile>
     <CodeAnalysisRuleSet>ProjectFileConverter.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
+
+  <PropertyGroup>
     <Authors>Johan Larsson</Authors>
     <Copyright>Johan Larsson 2018</Copyright>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="IDisposableAnalyzers" Version="2.1.3">
-      <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-    </PackageReference>
-    <PackageReference Include="Microsoft.NETCore.Platforms" Version="3.1.0-preview3.19551.4" />
+    <PackageReference Include="IDisposableAnalyzers" Version="2.1.3" PrivateAssets="all" />
+    <PackageReference Include="Microsoft.NETCore.Platforms" Version="3.1.0-preview3.19551.4"  PrivateAssets="all" />
     <PackageReference Include="PropertyChangedAnalyzers" Version="2.7.5" PrivateAssets="all" />
     <PackageReference Include="StyleCop.Analyzers" Version="1.2.0-beta.113" PrivateAssets="all" />
     <PackageReference Include="WpfAnalyzers" Version="2.4.3" PrivateAssets="all" />
