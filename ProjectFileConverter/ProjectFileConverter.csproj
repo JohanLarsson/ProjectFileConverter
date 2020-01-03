@@ -1,10 +1,8 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.WindowsDesktop">
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
-    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <TargetFramework>net461</TargetFramework>
     <UseWPF>true</UseWPF>
-    <PublishSingleFile>true</PublishSingleFile>
-    <RuntimeIdentifier>win-x64</RuntimeIdentifier>
     <CodeAnalysisRuleSet>ProjectFileConverter.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
 
@@ -16,7 +14,6 @@
   <ItemGroup>
     <PackageReference Include="Gu.Analyzers" Version="1.6.6.6-dev" PrivateAssets="all" />
     <PackageReference Include="IDisposableAnalyzers" Version="3.2.0" PrivateAssets="all" />
-    <PackageReference Include="Microsoft.NETCore.Platforms" Version="3.1.0" PrivateAssets="all" />
     <PackageReference Include="PropertyChangedAnalyzers" Version="2.7.5" PrivateAssets="all" />
     <PackageReference Include="ReflectionAnalyzers" Version="0.1.21-dev" PrivateAssets="all" />
     <PackageReference Include="StyleCop.Analyzers" Version="1.2.0-beta.113" PrivateAssets="all" />
