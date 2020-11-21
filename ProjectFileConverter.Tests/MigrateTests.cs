@@ -7,7 +7,7 @@
         [Test]
         public void Simple()
         {
-            var old = @"<?xml version=""1.0"" encoding=""utf-8""?>
+            var before = @"<?xml version=""1.0"" encoding=""utf-8""?>
 <Project ToolsVersion=""15.0"" xmlns=""http://schemas.microsoft.com/developer/msbuild/2003"">
   <Import Project=""$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props"" Condition=""Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')"" />
   <PropertyGroup>
@@ -95,7 +95,7 @@
   </ItemGroup>
 </Project>";
 
-            var expected = @"<Project Sdk=""Microsoft.NET.Sdk"">
+            var after = @"<Project Sdk=""Microsoft.NET.Sdk"">
   <PropertyGroup>
     <TargetFramework>net452</TargetFramework>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
@@ -115,8 +115,147 @@
   <Import Project=""..\.paket\paket.targets"" />
 </Project>";
 
-            var actual = Migrate.ProjectFile(old, "C:\\Git\\Gu.Inject\\Gu.Inject\\Gu.Inject.csproj");
-            Assert.AreEqual(expected,  actual);
+            var actual = Migrate.ProjectFile(before, "C:\\Git\\Gu.Inject\\Gu.Inject\\Gu.Inject.csproj");
+            Assert.AreEqual(after,  actual);
+        }
+
+        [Test]
+        public void WpfApp()
+        {
+            var before = @"<?xml version=""1.0"" encoding=""utf-8""?>
+<Project ToolsVersion=""14.0"" DefaultTargets=""Build"" xmlns=""http://schemas.microsoft.com/developer/msbuild/2003"">
+  <Import Project=""$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props"" Condition=""Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')"" />
+  <PropertyGroup>
+    <Configuration Condition="" '$(Configuration)' == '' "">Debug</Configuration>
+    <Platform Condition="" '$(Platform)' == '' "">AnyCPU</Platform>
+    <ProjectGuid>{0EE711C6-EE5C-42B5-A507-DB62687E9891}</ProjectGuid>
+    <OutputType>WinExe</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>GithubToc</RootNamespace>
+    <AssemblyName>GithubToc</AssemblyName>
+    <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <ProjectTypeGuids>{60dc8134-eba5-43b8-bcc9-bb4bc16c2548};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
+    <WarningLevel>4</WarningLevel>
+    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
+  </PropertyGroup>
+  <PropertyGroup Condition="" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' "">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <CodeAnalysisRuleSet>GithubToc.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' "">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <CodeAnalysisRuleSet>GithubToc.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include=""System"" />
+    <Reference Include=""System.Xml"" />
+    <Reference Include=""System.Core"" />
+    <Reference Include=""System.Xaml"">
+      <RequiredTargetFramework>4.0</RequiredTargetFramework>
+    </Reference>
+    <Reference Include=""WindowsBase"" />
+    <Reference Include=""PresentationCore"" />
+    <Reference Include=""PresentationFramework"" />
+  </ItemGroup>
+  <ItemGroup>
+    <ApplicationDefinition Include=""App.xaml"">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </ApplicationDefinition>
+    <Compile Include=""ViewModel.cs"" />
+    <Page Include=""MainWindow.xaml"">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Compile Include=""App.xaml.cs"">
+      <DependentUpon>App.xaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include=""Markdown\HeaderRow.cs"" />
+    <Compile Include=""Markdown\StringExt.cs"" />
+    <Compile Include=""Markdown\TableOfContents.cs"" />
+    <Compile Include=""MainWindow.xaml.cs"">
+      <DependentUpon>MainWindow.xaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include=""Properties\AssemblyInfo.cs"">
+      <SubType>Code</SubType>
+    </Compile>
+    <None Include=""GithubToc.ruleset"" />
+    <None Include=""paket.references"" />
+    <AppDesigner Include=""Properties\"" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include=""App.config"" />
+  </ItemGroup>
+  <Import Project=""$(MSBuildToolsPath)\Microsoft.CSharp.targets"" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name=""BeforeBuild"">
+  </Target>
+  <Target Name=""AfterBuild"">
+  </Target>
+  -->
+  <ItemGroup>
+    <PackageReference Include=""Gu.Analyzers"" Version=""1.8.3"" PrivateAssets=""all"" />
+    <PackageReference Include=""IDisposableAnalyzers"" Version=""3.2.0"" PrivateAssets=""all"" />
+    <PackageReference Include=""Microsoft.VisualStudio.Threading.Analyzers"" Version=""16.8.55"" PrivateAssets=""all"" />
+    <PackageReference Include=""PropertyChangedAnalyzers"" Version=""3.2.1"" PrivateAssets=""all"" />
+    <PackageReference Include=""ReflectionAnalyzers"" Version=""0.1.21-dev"" PrivateAssets=""all"" />
+    <PackageReference Include=""StyleCop.Analyzers"" Version=""1.2.0-beta.113"" PrivateAssets=""all"" />
+    <PackageReference Include=""WpfAnalyzers"" Version=""2.4.4"" PrivateAssets=""all"" />
+  </ItemGroup>
+</Project>";
+
+            var after = @"<Project Sdk=""Microsoft.NET.Sdk.WindowsDesktop"">
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net452</TargetFramework>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
+    <UseWPF>true</UseWPF>
+  </PropertyGroup>
+  <PropertyGroup Condition="" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' "">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <CodeAnalysisRuleSet>GithubToc.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' "">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <Optimize>true</Optimize>
+    <CodeAnalysisRuleSet>GithubToc.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
+  <ItemGroup>
+    <AppDesigner Include=""Properties\"" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include=""Gu.Analyzers"" Version=""1.8.3"" PrivateAssets=""all"" />
+    <PackageReference Include=""IDisposableAnalyzers"" Version=""3.2.0"" PrivateAssets=""all"" />
+    <PackageReference Include=""Microsoft.VisualStudio.Threading.Analyzers"" Version=""16.8.55"" PrivateAssets=""all"" />
+    <PackageReference Include=""PropertyChangedAnalyzers"" Version=""3.2.1"" PrivateAssets=""all"" />
+    <PackageReference Include=""ReflectionAnalyzers"" Version=""0.1.21-dev"" PrivateAssets=""all"" />
+    <PackageReference Include=""StyleCop.Analyzers"" Version=""1.2.0-beta.113"" PrivateAssets=""all"" />
+    <PackageReference Include=""WpfAnalyzers"" Version=""2.4.4"" PrivateAssets=""all"" />
+  </ItemGroup>
+</Project>";
+
+            var actual = Migrate.ProjectFile(before, "C:\\Git\\GithubToc\\GithubToc\\GithubToc.csproj");
+            Assert.AreEqual(after, actual);
         }
 
         [TestCase("<Import Project=\"$(MSBuildExtensionsPath)\\$(MSBuildToolsVersion)\\Microsoft.Common.props\" Condition=\"Exists(\'$(MSBuildExtensionsPath)\\$(MSBuildToolsVersion)\\Microsoft.Common.props\')\" />")]

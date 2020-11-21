@@ -5,6 +5,7 @@
     using System.Linq;
     using System.Text;
     using System.Text.RegularExpressions;
+    using System.Xml;
     using System.Xml.Linq;
 
     public static class Migrate
@@ -18,7 +19,7 @@
         {
             var original = XDocument.Parse(xml.Replace("xmlns=\"http://schemas.microsoft.com/developer/msbuild/2003\"", string.Empty));
             var root = new XElement(XName.Get("Project"));
-            root.SetAttributeValue(XName.Get("Sdk"), "Microsoft.NET.Sdk");
+            root.SetAttributeValue(XName.Get("Sdk"), IsWpf(original) ? "Microsoft.NET.Sdk.WindowsDesktop" : "Microsoft.NET.Sdk");
             foreach (var element in original.Root.Elements())
             {
                 var localName = element.Name.LocalName;
@@ -54,7 +55,7 @@
                         continue;
                     case "Import":
                         {
-                            if (element.Attribute(XName.Get("Project")) is XAttribute pa)
+                            if (element.Attribute(XName.Get("Project")) is { } pa)
                             {
                                 switch (pa.Value)
                                 {
@@ -83,9 +84,11 @@
                 var builder = new StringBuilder(csproj);
                 builder.Insert(
                     index,
+#pragma warning disable SA1118 // Parameter should not span multiple lines
                     csproj.Contains("<OutputType>Exe</OutputType>")
                         ? $"{Environment.NewLine}    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>"
                         : $"{Environment.NewLine}    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>{Environment.NewLine}    <GenerateBindingRedirectsOutputType>true</GenerateBindingRedirectsOutputType>");
+#pragma warning restore SA1118 // Parameter should not span multiple lines
 
                 return builder.ToString();
             }
@@ -140,6 +143,19 @@
             }
 
             return attribute != null;
+        }
+
+        private static bool IsWpf(XDocument element)
+        {
+            return HasInclude("WindowsBase") &&
+                   HasInclude("PresentationCore") &&
+                   HasInclude("PresentationFramework");
+
+            bool HasInclude(string name)
+            {
+                return element.Descendants().Any(x => x.Name.LocalName == "Reference" &&
+                                                      IsSingleAttributeOnly(x, "Include", new Regex($@"^{name}$")));
+            }
         }
 
         public static class PropertyGroup
@@ -206,6 +222,12 @@
                     migrated = null;
                 }
 
+                if (IsWpf(old.Document) &&
+                    old.Document.Root.Element(XName.Get("PropertyGroup")) == old)
+                {
+                    migrated.Add(new XElement("UseWPF", true));
+                }
+
                 return true;
             }
         }
@@ -230,11 +252,23 @@
                 {
                     switch (element.Name.LocalName)
                     {
+                        case "ApplicationDefinition"
+                            when IsWpf(old.Document):
+                            continue;
+                        case "Page"
+                            when IsWpf(old.Document):
+                            continue;
                         case "None":
                             continue;
-                        case "Reference" when IsSingleAttributeOnly(element, "Include", new Regex(@"^(System|System\.Core|System\.Data|System\.Drawing|System\.IO\.Compression\.FileSystem|System\.Numerics|System\.Runtime\.Serialization|System\.Xml|System\.Xml\.Linq)$")):
+                        case "Reference"
+                            when HasAttribute(element, "Include", new Regex(@"^(System.Xaml|WindowsBase|PresentationCore|PresentationFramework)$")) &&
+                                 IsWpf(old.Document):
                             continue;
-                        case "Compile" when HasAttribute(element, "Include", new Regex(@"([^\\]+\\)*[^\\]+\.cs")):
+                        case "Reference"
+                            when IsSingleAttributeOnly(element, "Include", new Regex(@"^(System|System\.Core|System\.Data|System\.Drawing|System\.IO\.Compression\.FileSystem|System\.Numerics|System\.Runtime\.Serialization|System\.Xml|System\.Xml\.Linq)$")):
+                            continue;
+                        case "Compile"
+                            when HasAttribute(element, "Include", new Regex(@"([^\\]+\\)*[^\\]+\.cs")):
                             continue;
                         case "EmbeddedResource" when HasAttribute(element, "Include", new Regex(@"([^\\]+\\)*[^\\]+\.resx")):
                             continue;
