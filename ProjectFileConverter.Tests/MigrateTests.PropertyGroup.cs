@@ -1,6 +1,7 @@
 ﻿namespace ProjectFileConverter.Tests
 {
     using System.Xml.Linq;
+
     using NUnit.Framework;
 
     public partial class MigrateTests
@@ -24,7 +25,7 @@
   <FileAlignment>512</FileAlignment>
 </PropertyGroup>");
 
-                Assert.AreEqual(true, Migrate.PropertyGroup.TryMigrate(element, "C:\\Git\\Gu.Inject\\Gu.Inject\\Gu.Inject.csproj", out var migrated));
+                Assert.AreEqual(true, Migrate.PropertyGroup.TryMigrate(element, "C:\\Git\\Gu.Inject\\Gu.Inject\\Gu.Inject.csproj", isWpf: false, out var migrated));
                 var expected = @"
 <PropertyGroup>
   <TargetFramework>net452</TargetFramework>
@@ -50,7 +51,7 @@
   <DocumentationFile>bin\Debug\Gu.Inject.xml</DocumentationFile>
 </PropertyGroup>");
 
-                Assert.AreEqual(true, Migrate.PropertyGroup.TryMigrate(element, "C:\\Git\\Gu.Inject\\Gu.Inject\\Gu.Inject.csproj", out var migrated));
+                Assert.AreEqual(true, Migrate.PropertyGroup.TryMigrate(element, "C:\\Git\\Gu.Inject\\Gu.Inject\\Gu.Inject.csproj", isWpf: false, out var migrated));
 
                 var expected = @"
 <PropertyGroup Condition="" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' "">
@@ -76,7 +77,7 @@
   <DocumentationFile>bin\Release\Gu.Inject.xml</DocumentationFile>
 </PropertyGroup>");
 
-                Assert.AreEqual(true, Migrate.PropertyGroup.TryMigrate(element, "C:\\Git\\Gu.Inject\\Gu.Inject\\Gu.Inject.csproj", out var migrated));
+                Assert.AreEqual(true, Migrate.PropertyGroup.TryMigrate(element, "C:\\Git\\Gu.Inject\\Gu.Inject\\Gu.Inject.csproj", isWpf: false, out var migrated));
 
                 var expected = @"
 <PropertyGroup Condition="" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' "">

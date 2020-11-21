@@ -7,8 +7,9 @@
     {
         public class ItemGroup
         {
-            [Test]
-            public void CsFiles()
+            [TestCase(true)]
+            [TestCase(false)]
+            public void CsFiles(bool isWpf)
             {
                 var element = XElement.Parse(
                     @"
@@ -37,12 +38,13 @@
   <Compile Include=""Settings\Visibility.cs"" />
 </ItemGroup>");
 
-                Assert.AreEqual(true, Migrate.ItemGroup.TryMigrate(element, out var migrated));
+                Assert.AreEqual(true, Migrate.ItemGroup.TryMigrate(element, isWpf, out var migrated));
                 Assert.AreEqual(null, migrated);
             }
 
-            [Test]
-            public void ResxFiles()
+            [TestCase(true)]
+            [TestCase(false)]
+            public void ResxFiles(bool isWpf)
             {
                 var element = XElement.Parse(
                     @"
@@ -59,12 +61,13 @@
   </EmbeddedResource>
 </ItemGroup>");
 
-                Assert.AreEqual(true, Migrate.ItemGroup.TryMigrate(element, out var migrated));
+                Assert.AreEqual(true, Migrate.ItemGroup.TryMigrate(element, isWpf, out var migrated));
                 Assert.AreEqual(null, migrated);
             }
 
-            [Test]
-            public void DefaultFrameworkReferences()
+            [TestCase(true)]
+            [TestCase(false)]
+            public void DefaultFrameworkReferences(bool isWpf)
             {
                 var element = XElement.Parse(
                     @"
@@ -73,7 +76,7 @@
   <Reference Include=""System.Core"" />
 </ItemGroup>");
 
-                Assert.AreEqual(true, Migrate.ItemGroup.TryMigrate(element, out var migrated));
+                Assert.AreEqual(true, Migrate.ItemGroup.TryMigrate(element, isWpf, out var migrated));
                 Assert.AreEqual(null, migrated);
             }
 
@@ -96,7 +99,7 @@
   <Reference Include=""WindowsBase"" />
 </ItemGroup>");
 
-                Assert.AreEqual(true, Migrate.ItemGroup.TryMigrate(element, out var migrated));
+                Assert.AreEqual(true, Migrate.ItemGroup.TryMigrate(element, isWpf: false, out var migrated));
                 var expected = @"<ItemGroup>
   <Reference Include=""System.Windows"" />
   <Reference Include=""Accessibility"" />
@@ -112,7 +115,38 @@
             }
 
             [Test]
-            public void ProjectReference()
+            public void FrameworkReferencesWpf()
+            {
+                var element = XElement.Parse(
+                    @"
+<ItemGroup>
+  <Reference Include=""System"" />
+  <Reference Include=""System.Core"" />
+  <Reference Include=""System.Windows"" />
+  <Reference Include=""Accessibility"" />
+  <Reference Include=""PresentationCore"" />
+  <Reference Include=""PresentationFramework"" />
+  <Reference Include=""System.Windows.Forms"" />
+  <Reference Include=""System.Xaml"" />
+  <Reference Include=""UIAutomationClient"" />
+  <Reference Include=""UIAutomationTypes"" />
+  <Reference Include=""WindowsBase"" />
+</ItemGroup>");
+
+                Assert.AreEqual(true, Migrate.ItemGroup.TryMigrate(element, isWpf: true, out var migrated));
+                var expected = @"<ItemGroup>
+  <Reference Include=""System.Windows"" />
+  <Reference Include=""Accessibility"" />
+  <Reference Include=""System.Windows.Forms"" />
+  <Reference Include=""UIAutomationClient"" />
+  <Reference Include=""UIAutomationTypes"" />
+</ItemGroup>";
+                Assert.AreEqual(expected, migrated.ToString());
+            }
+
+            [TestCase(true)]
+            [TestCase(false)]
+            public void ProjectReference(bool isWpf)
             {
                 var element = XElement.Parse(
                     @"
@@ -123,15 +157,16 @@
   </ProjectReference>
 </ItemGroup>");
 
-                Assert.AreEqual(true, Migrate.ItemGroup.TryMigrate(element, out var migrated));
+                Assert.AreEqual(true, Migrate.ItemGroup.TryMigrate(element, isWpf, out var migrated));
                 var expected = @"<ItemGroup>
   <ProjectReference Include=""..\Gu.Inject\Gu.Inject.csproj"" />
 </ItemGroup>";
                 Assert.AreEqual(expected, migrated.ToString());
             }
 
-            [Test]
-            public void AnalyzersPaket()
+            [TestCase(true)]
+            [TestCase(false)]
+            public void AnalyzersPaket(bool isWpf)
             {
                 var element = XElement.Parse(
                     @"
@@ -144,12 +179,13 @@
   </Analyzer>
 </ItemGroup>");
 
-                Assert.AreEqual(true, Migrate.ItemGroup.TryMigrate(element, out var migrated));
+                Assert.AreEqual(true, Migrate.ItemGroup.TryMigrate(element, isWpf, out var migrated));
                 Assert.AreEqual(null, migrated);
             }
 
-            [Test]
-            public void NugetReferences()
+            [TestCase(true)]
+            [TestCase(false)]
+            public void NugetReferences(bool isWpf)
             {
                 var element = XElement.Parse(
                     @"
@@ -161,7 +197,7 @@
   </Reference>
 </ItemGroup>");
 
-                Assert.AreEqual(true, Migrate.ItemGroup.TryMigrate(element, out var migrated));
+                Assert.AreEqual(true, Migrate.ItemGroup.TryMigrate(element, isWpf, out var migrated));
                 var expected = @"<ItemGroup>
   <PackageReference Include=""MySql.Data"" Version=""6.9.9"" />
 </ItemGroup>";

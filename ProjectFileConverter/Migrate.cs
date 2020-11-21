@@ -19,7 +19,8 @@
         {
             var original = XDocument.Parse(xml.Replace("xmlns=\"http://schemas.microsoft.com/developer/msbuild/2003\"", string.Empty));
             var root = new XElement(XName.Get("Project"));
-            root.SetAttributeValue(XName.Get("Sdk"), IsWpf(original) ? "Microsoft.NET.Sdk.WindowsDesktop" : "Microsoft.NET.Sdk");
+            var isWpf = IsWpf(original);
+            root.SetAttributeValue(XName.Get("Sdk"), isWpf ? "Microsoft.NET.Sdk.WindowsDesktop" : "Microsoft.NET.Sdk");
             foreach (var element in original.Root.Elements())
             {
                 var localName = element.Name.LocalName;
@@ -27,7 +28,7 @@
                 {
                     case "PropertyGroup":
                         {
-                            if (PropertyGroup.TryMigrate(element, fileName, out var migratedElement))
+                            if (PropertyGroup.TryMigrate(element, fileName, isWpf, out var migratedElement))
                             {
                                 if (migratedElement != null)
                                 {
@@ -40,7 +41,7 @@
 
                     case "ItemGroup":
                         {
-                            if (ItemGroup.TryMigrate(element, out var migratedElement))
+                            if (ItemGroup.TryMigrate(element, isWpf, out var migratedElement))
                             {
                                 if (migratedElement != null)
                                 {
@@ -74,6 +75,19 @@
             }
 
             return new XDocument(root).ToString();
+
+            static bool IsWpf(XDocument element)
+            {
+                return HasInclude("WindowsBase") &&
+                       HasInclude("PresentationCore") &&
+                       HasInclude("PresentationFramework");
+
+                bool HasInclude(string name)
+                {
+                    return element.Descendants().Any(x => x.Name.LocalName == "Reference" &&
+                                                          IsSingleAttributeOnly(x, "Include", new Regex($@"^{name}$")));
+                }
+            }
         }
 
         public static string WithAutoGenerateBindingRedirects(string csproj)
@@ -145,22 +159,9 @@
             return attribute != null;
         }
 
-        private static bool IsWpf(XDocument element)
-        {
-            return HasInclude("WindowsBase") &&
-                   HasInclude("PresentationCore") &&
-                   HasInclude("PresentationFramework");
-
-            bool HasInclude(string name)
-            {
-                return element.Descendants().Any(x => x.Name.LocalName == "Reference" &&
-                                                      IsSingleAttributeOnly(x, "Include", new Regex($@"^{name}$")));
-            }
-        }
-
         public static class PropertyGroup
         {
-            public static bool TryMigrate(XElement old, string fileName, out XElement migrated)
+            public static bool TryMigrate(XElement old, string fileName, bool isWpf, out XElement migrated)
             {
                 // http://www.natemcmaster.com/blog/2017/03/09/vs2015-to-vs2017-upgrade/#propertygroup
                 if (old.Name.LocalName != "PropertyGroup")
@@ -222,7 +223,7 @@
                     migrated = null;
                 }
 
-                if (IsWpf(old.Document) &&
+                if (isWpf &&
                     old.Document.Root.Element(XName.Get("PropertyGroup")) == old)
                 {
                     migrated.Add(new XElement("UseWPF", true));
@@ -236,7 +237,7 @@
         {
             private const string NameAndVersionPattern = @"(?<name>[^,]+), Version=(?<version>\d+(.\d+)*)(.0)*";
 
-            public static bool TryMigrate(XElement old, out XElement migrated)
+            public static bool TryMigrate(XElement old, bool isWpf, out XElement migrated)
             {
                 // http://www.natemcmaster.com/blog/2017/03/09/vs2015-to-vs2017-upgrade/#that-massive-list-of-files
                 if (old.Name.LocalName != "ItemGroup")
@@ -253,16 +254,16 @@
                     switch (element.Name.LocalName)
                     {
                         case "ApplicationDefinition"
-                            when IsWpf(old.Document):
+                            when isWpf:
                             continue;
                         case "Page"
-                            when IsWpf(old.Document):
+                            when isWpf:
                             continue;
                         case "None":
                             continue;
                         case "Reference"
                             when HasAttribute(element, "Include", new Regex(@"^(System.Xaml|WindowsBase|PresentationCore|PresentationFramework)$")) &&
-                                 IsWpf(old.Document):
+                                 isWpf:
                             continue;
                         case "Reference"
                             when IsSingleAttributeOnly(element, "Include", new Regex(@"^(System|System\.Core|System\.Data|System\.Drawing|System\.IO\.Compression\.FileSystem|System\.Numerics|System\.Runtime\.Serialization|System\.Xml|System\.Xml\.Linq)$")):
