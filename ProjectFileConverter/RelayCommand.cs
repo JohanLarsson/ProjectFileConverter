@@ -1,4 +1,4 @@
-﻿namespace ProjectFileConverter
+namespace ProjectFileConverter
 {
     using System;
     using System.Windows.Input;
