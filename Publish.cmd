@@ -1,2 +1,2 @@
-dotnet publish ./ProjectFileConverter/ProjectFileConverter.csproj -c Release
+dotnet publish ./ProjectFileConverter/ProjectFileConverter.csproj -c Release -o ./ProjectFileConverter/bin
 # @pause
