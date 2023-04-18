@@ -17,4 +17,4 @@ jobs:
       - name: build
         run: dotnet build --configuration Release --no-restore
       - name: test
-        run: dotnet test --no-build --configuration Release
+        run: dotnet test --configuration Release --no-build 
