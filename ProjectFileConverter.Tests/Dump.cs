@@ -5,17 +5,11 @@
     using System.Xml.Linq;
     using NUnit.Framework;
 
-    public class Dump
+    [Explicit("Script")]
+    public static class Dump
     {
         [Test]
-        public void IntentionalFailing()
-        {
-            Assert.AreEqual(1, 2);
-        }
-
-        [Explicit("Script")]
-        [Test]
-        public void ElementNames()
+        public static void ElementNames()
         {
             var element = XElement.Parse(
                 @"<?xml version=""1.0"" encoding=""utf-8""?>
