@@ -9,7 +9,7 @@
     public class Dump
     {
         [Test]
-        public void ElementNames()
+        public void IntentionalFailing()
         {
             Assert.AreEqual(1, 2);
         }
