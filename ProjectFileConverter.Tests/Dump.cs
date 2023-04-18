@@ -11,6 +11,12 @@
         [Test]
         public void ElementNames()
         {
+            Assert.AreEqual(1, 2);
+        }
+
+        [Test]
+        public void ElementNames()
+        {
             var element = XElement.Parse(
                 @"<?xml version=""1.0"" encoding=""utf-8""?>
 <Foo>
