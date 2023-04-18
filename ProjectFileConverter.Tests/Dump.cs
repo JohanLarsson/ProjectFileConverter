@@ -5,7 +5,6 @@
     using System.Xml.Linq;
     using NUnit.Framework;
 
-    [Explicit("Script")]
     public class Dump
     {
         [Test]
@@ -14,6 +13,7 @@
             Assert.AreEqual(1, 2);
         }
 
+        [Explicit("Script")]
         [Test]
         public void ElementNames()
         {
