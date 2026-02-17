@@ -1,4 +1,4 @@
-﻿namespace ProjectFileConverter.Tests
+namespace ProjectFileConverter.Tests
 {
     using System.Xml.Linq;
     using NUnit.Framework;
@@ -12,31 +12,33 @@
             public void CsFiles(bool isWpf)
             {
                 var element = XElement.Parse(
-                    @"
-<ItemGroup>
-  <Compile Include=""IGetter.cs"" />
-  <Compile Include=""Internals\Factory{TArg,T}.cs"" />
-  <Compile Include=""Internals\Factory{T}.cs"" />
-  <Compile Include=""Internals\IFactory.cs"" />
-  <Compile Include=""Settings\AssemblySettings.cs"" />
-  <Compile Include=""Settings\Constructor.cs"" />
-  <Compile Include=""Exceptions\AmbiguousBindingException.cs"" />
-  <Compile Include=""Exceptions\AmbiguousGenericBindingException.cs"" />
-  <Compile Include=""Exceptions\BindingException.cs"" />
-  <Compile Include=""Exceptions\CircularDependencyException.cs"" />
-  <Compile Include=""Exceptions\NoBindingException.cs"" />
-  <Compile Include=""Internals\Ctor.cs"" />
-  <Compile Include=""Internals\ConcurrentDictionaryPool.cs"" />
-  <Compile Include=""Kernel.cs"" />
-  <Compile Include=""Internals\TypeMap.cs"" />
-  <Compile Include=""Properties\AssemblyInfo.cs"" />
-  <Compile Include=""Internals\TypeExt.cs"" />
-  <Compile Include=""Exceptions\ResolveException.cs"" />
-  <Compile Include=""Settings\ConstructorSettings.cs"" />
-  <Compile Include=""Settings\DisposeSettings.cs"" />
-  <Compile Include=""Settings\Settings.cs"" />
-  <Compile Include=""Settings\Visibility.cs"" />
-</ItemGroup>");
+                    """
+
+                    <ItemGroup>
+                      <Compile Include="IGetter.cs" />
+                      <Compile Include="Internals\Factory{TArg,T}.cs" />
+                      <Compile Include="Internals\Factory{T}.cs" />
+                      <Compile Include="Internals\IFactory.cs" />
+                      <Compile Include="Settings\AssemblySettings.cs" />
+                      <Compile Include="Settings\Constructor.cs" />
+                      <Compile Include="Exceptions\AmbiguousBindingException.cs" />
+                      <Compile Include="Exceptions\AmbiguousGenericBindingException.cs" />
+                      <Compile Include="Exceptions\BindingException.cs" />
+                      <Compile Include="Exceptions\CircularDependencyException.cs" />
+                      <Compile Include="Exceptions\NoBindingException.cs" />
+                      <Compile Include="Internals\Ctor.cs" />
+                      <Compile Include="Internals\ConcurrentDictionaryPool.cs" />
+                      <Compile Include="Kernel.cs" />
+                      <Compile Include="Internals\TypeMap.cs" />
+                      <Compile Include="Properties\AssemblyInfo.cs" />
+                      <Compile Include="Internals\TypeExt.cs" />
+                      <Compile Include="Exceptions\ResolveException.cs" />
+                      <Compile Include="Settings\ConstructorSettings.cs" />
+                      <Compile Include="Settings\DisposeSettings.cs" />
+                      <Compile Include="Settings\Settings.cs" />
+                      <Compile Include="Settings\Visibility.cs" />
+                    </ItemGroup>
+                    """);
 
                 Assert.AreEqual(true, Migrate.ItemGroup.TryMigrate(element, isWpf, out var migrated));
                 Assert.AreEqual(null, migrated);
@@ -47,19 +49,21 @@
             public void ResxFiles(bool isWpf)
             {
                 var element = XElement.Parse(
-                    @"
-<ItemGroup>
-   <Compile Include=""Properties\Resources.Designer.cs"">
-    <AutoGen>True</AutoGen>
-    <DesignTime>True</DesignTime>
-    <DependentUpon>Resources.resx</DependentUpon>
-  </Compile>
-   <EmbeddedResource Include=""Properties\Resources.resx"">
-    <Generator>PublicResXFileCodeGenerator</Generator>
-    <LastGenOutput>Resources.Designer.cs</LastGenOutput>
-    <SubType>Designer</SubType>
-  </EmbeddedResource>
-</ItemGroup>");
+                    """
+
+                    <ItemGroup>
+                       <Compile Include="Properties\Resources.Designer.cs">
+                        <AutoGen>True</AutoGen>
+                        <DesignTime>True</DesignTime>
+                        <DependentUpon>Resources.resx</DependentUpon>
+                      </Compile>
+                       <EmbeddedResource Include="Properties\Resources.resx">
+                        <Generator>PublicResXFileCodeGenerator</Generator>
+                        <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+                        <SubType>Designer</SubType>
+                      </EmbeddedResource>
+                    </ItemGroup>
+                    """);
 
                 Assert.AreEqual(true, Migrate.ItemGroup.TryMigrate(element, isWpf, out var migrated));
                 Assert.AreEqual(null, migrated);
@@ -70,11 +74,13 @@
             public void DefaultFrameworkReferences(bool isWpf)
             {
                 var element = XElement.Parse(
-                    @"
-<ItemGroup>
-  <Reference Include=""System"" />
-  <Reference Include=""System.Core"" />
-</ItemGroup>");
+                    """
+
+                    <ItemGroup>
+                      <Reference Include="System" />
+                      <Reference Include="System.Core" />
+                    </ItemGroup>
+                    """);
 
                 Assert.AreEqual(true, Migrate.ItemGroup.TryMigrate(element, isWpf, out var migrated));
                 Assert.AreEqual(null, migrated);
@@ -84,33 +90,37 @@
             public void FrameworkReferences()
             {
                 var element = XElement.Parse(
-                    @"
-<ItemGroup>
-  <Reference Include=""System"" />
-  <Reference Include=""System.Core"" />
-  <Reference Include=""System.Windows"" />
-  <Reference Include=""Accessibility"" />
-  <Reference Include=""PresentationCore"" />
-  <Reference Include=""PresentationFramework"" />
-  <Reference Include=""System.Windows.Forms"" />
-  <Reference Include=""System.Xaml"" />
-  <Reference Include=""UIAutomationClient"" />
-  <Reference Include=""UIAutomationTypes"" />
-  <Reference Include=""WindowsBase"" />
-</ItemGroup>");
+                    """
+
+                    <ItemGroup>
+                      <Reference Include="System" />
+                      <Reference Include="System.Core" />
+                      <Reference Include="System.Windows" />
+                      <Reference Include="Accessibility" />
+                      <Reference Include="PresentationCore" />
+                      <Reference Include="PresentationFramework" />
+                      <Reference Include="System.Windows.Forms" />
+                      <Reference Include="System.Xaml" />
+                      <Reference Include="UIAutomationClient" />
+                      <Reference Include="UIAutomationTypes" />
+                      <Reference Include="WindowsBase" />
+                    </ItemGroup>
+                    """);
 
                 Assert.AreEqual(true, Migrate.ItemGroup.TryMigrate(element, isWpf: false, out var migrated));
-                var expected = @"<ItemGroup>
-  <Reference Include=""System.Windows"" />
-  <Reference Include=""Accessibility"" />
-  <Reference Include=""PresentationCore"" />
-  <Reference Include=""PresentationFramework"" />
-  <Reference Include=""System.Windows.Forms"" />
-  <Reference Include=""System.Xaml"" />
-  <Reference Include=""UIAutomationClient"" />
-  <Reference Include=""UIAutomationTypes"" />
-  <Reference Include=""WindowsBase"" />
-</ItemGroup>";
+                var expected = """
+                               <ItemGroup>
+                                 <Reference Include="System.Windows" />
+                                 <Reference Include="Accessibility" />
+                                 <Reference Include="PresentationCore" />
+                                 <Reference Include="PresentationFramework" />
+                                 <Reference Include="System.Windows.Forms" />
+                                 <Reference Include="System.Xaml" />
+                                 <Reference Include="UIAutomationClient" />
+                                 <Reference Include="UIAutomationTypes" />
+                                 <Reference Include="WindowsBase" />
+                               </ItemGroup>
+                               """;
                 Assert.AreEqual(expected, migrated.ToString());
             }
 
@@ -118,29 +128,33 @@
             public void FrameworkReferencesWpf()
             {
                 var element = XElement.Parse(
-                    @"
-<ItemGroup>
-  <Reference Include=""System"" />
-  <Reference Include=""System.Core"" />
-  <Reference Include=""System.Windows"" />
-  <Reference Include=""Accessibility"" />
-  <Reference Include=""PresentationCore"" />
-  <Reference Include=""PresentationFramework"" />
-  <Reference Include=""System.Windows.Forms"" />
-  <Reference Include=""System.Xaml"" />
-  <Reference Include=""UIAutomationClient"" />
-  <Reference Include=""UIAutomationTypes"" />
-  <Reference Include=""WindowsBase"" />
-</ItemGroup>");
+                    """
+
+                    <ItemGroup>
+                      <Reference Include="System" />
+                      <Reference Include="System.Core" />
+                      <Reference Include="System.Windows" />
+                      <Reference Include="Accessibility" />
+                      <Reference Include="PresentationCore" />
+                      <Reference Include="PresentationFramework" />
+                      <Reference Include="System.Windows.Forms" />
+                      <Reference Include="System.Xaml" />
+                      <Reference Include="UIAutomationClient" />
+                      <Reference Include="UIAutomationTypes" />
+                      <Reference Include="WindowsBase" />
+                    </ItemGroup>
+                    """);
 
                 Assert.AreEqual(true, Migrate.ItemGroup.TryMigrate(element, isWpf: true, out var migrated));
-                var expected = @"<ItemGroup>
-  <Reference Include=""System.Windows"" />
-  <Reference Include=""Accessibility"" />
-  <Reference Include=""System.Windows.Forms"" />
-  <Reference Include=""UIAutomationClient"" />
-  <Reference Include=""UIAutomationTypes"" />
-</ItemGroup>";
+                var expected = """
+                               <ItemGroup>
+                                 <Reference Include="System.Windows" />
+                                 <Reference Include="Accessibility" />
+                                 <Reference Include="System.Windows.Forms" />
+                                 <Reference Include="UIAutomationClient" />
+                                 <Reference Include="UIAutomationTypes" />
+                               </ItemGroup>
+                               """;
                 Assert.AreEqual(expected, migrated.ToString());
             }
 
@@ -149,18 +163,22 @@
             public void ProjectReference(bool isWpf)
             {
                 var element = XElement.Parse(
-                    @"
-<ItemGroup>
-  <ProjectReference Include=""..\Gu.Inject\Gu.Inject.csproj"">
-    <Project>{8953C8E1-0819-4EB8-B10C-5286DEB0E079}</Project>
-    <Name>Gu.Inject</Name>
-  </ProjectReference>
-</ItemGroup>");
+                    """
+
+                    <ItemGroup>
+                      <ProjectReference Include="..\Gu.Inject\Gu.Inject.csproj">
+                        <Project>{8953C8E1-0819-4EB8-B10C-5286DEB0E079}</Project>
+                        <Name>Gu.Inject</Name>
+                      </ProjectReference>
+                    </ItemGroup>
+                    """);
 
                 Assert.AreEqual(true, Migrate.ItemGroup.TryMigrate(element, isWpf, out var migrated));
-                var expected = @"<ItemGroup>
-  <ProjectReference Include=""..\Gu.Inject\Gu.Inject.csproj"" />
-</ItemGroup>";
+                var expected = """
+                               <ItemGroup>
+                                 <ProjectReference Include="..\Gu.Inject\Gu.Inject.csproj" />
+                               </ItemGroup>
+                               """;
                 Assert.AreEqual(expected, migrated.ToString());
             }
 
@@ -169,15 +187,17 @@
             public void AnalyzersPaket(bool isWpf)
             {
                 var element = XElement.Parse(
-                    @"
-<ItemGroup>
-  <Analyzer Include=""..\packages\analyzers\Gu.Analyzers\analyzers\dotnet\cs\Gu.Analyzers.Analyzers.dll"">
-    <Paket>True</Paket>
-  </Analyzer>
-  <Analyzer Include=""..\packages\analyzers\Gu.Analyzers\analyzers\dotnet\cs\Gu.Analyzers.CodeFixes.dll"">
-    <Paket>True</Paket>
-  </Analyzer>
-</ItemGroup>");
+                    """
+
+                    <ItemGroup>
+                      <Analyzer Include="..\packages\analyzers\Gu.Analyzers\analyzers\dotnet\cs\Gu.Analyzers.Analyzers.dll">
+                        <Paket>True</Paket>
+                      </Analyzer>
+                      <Analyzer Include="..\packages\analyzers\Gu.Analyzers\analyzers\dotnet\cs\Gu.Analyzers.CodeFixes.dll">
+                        <Paket>True</Paket>
+                      </Analyzer>
+                    </ItemGroup>
+                    """);
 
                 Assert.AreEqual(true, Migrate.ItemGroup.TryMigrate(element, isWpf, out var migrated));
                 Assert.AreEqual(null, migrated);
@@ -188,19 +208,23 @@
             public void NugetReferences(bool isWpf)
             {
                 var element = XElement.Parse(
-                    @"
-<ItemGroup>
-  <None Include=""packages.config"" />
-  <Reference Include=""MySql.Data, Version=6.9.9.0, Culture=neutral, PublicKeyToken=c5687fc88969c44d, processorArchitecture=MSIL"">
-    <HintPath>..\..\packages\MySql.Data.6.9.9\lib\net45\MySql.Data.dll</HintPath>
-    <Private>True</Private>
-  </Reference>
-</ItemGroup>");
+                    """
+
+                    <ItemGroup>
+                      <None Include="packages.config" />
+                      <Reference Include="MySql.Data, Version=6.9.9.0, Culture=neutral, PublicKeyToken=c5687fc88969c44d, processorArchitecture=MSIL">
+                        <HintPath>..\..\packages\MySql.Data.6.9.9\lib\net45\MySql.Data.dll</HintPath>
+                        <Private>True</Private>
+                      </Reference>
+                    </ItemGroup>
+                    """);
 
                 Assert.AreEqual(true, Migrate.ItemGroup.TryMigrate(element, isWpf, out var migrated));
-                var expected = @"<ItemGroup>
-  <PackageReference Include=""MySql.Data"" Version=""6.9.9"" />
-</ItemGroup>";
+                var expected = """
+                               <ItemGroup>
+                                 <PackageReference Include="MySql.Data" Version="6.9.9" />
+                               </ItemGroup>
+                               """;
                 Assert.AreEqual(expected, migrated.ToString());
             }
         }
